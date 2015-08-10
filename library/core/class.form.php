@@ -1823,8 +1823,7 @@ PASSWORDMETER;
      * @return boolean
      */
     public function buttonExists($ButtonCode) {
-        $NameKey = $this->escapeString($ButtonCode);
-        return array_key_exists($NameKey, $this->formValues()) ? true : false;
+        return array_key_exists($ButtonCode, $this->formValues()) ? true : false;
     }
 
     /**
@@ -1848,13 +1847,35 @@ PASSWORDMETER;
     }
 
     /**
-     * Returns the provided fieldname with non-alpha-numeric values stripped.
+     * PHP doesn't allow "." in variable names from external sources such as a
+     * HTML form. Some Vanilla components however rely on variable names such
+     * as "a.b.c". So we need to escape them for backwards compatibility.
      *
-     * @param string $FieldName The field name to escape.
+     * Replaces e.g. "\" with "\\", "-dot-" with "\\-dot-" and "." with "-dot-".
+     *
+     * @see Gdn_Form::unescapeFieldName()
+     *
+     * @param string $string
      * @return string
      */
-    public function escapeFieldName($FieldName) {
-        return $this->escapeString($FieldName);
+    public function escapeFieldName($string) {
+        $search = array('\\', '-dot-', '.');
+        $replace = array('\\\\', '\\-dot-', '-dot-');
+        return str_replace($search, $replace, $string);
+    }
+
+    /**
+     * Replaces e.g. "\\" with "\", "\\-dot-" with "-dot-" and "-dot-" with ".".
+     *
+     * @see Gdn_Form::escapeFieldName()
+     *
+     * @param string $string
+     * @return string
+     */
+    public function unescapeFieldName($string) {
+        $search = array('/(?<!\\\\)(\\\\\\\\)*-dot-/', '/\\\\-dot-/', '/\\\\\\\\/');
+        $replace = array('$1.', '-dot-', '\\\\');
+        return preg_replace($search, $replace, $string);
     }
 
     /**
@@ -2337,9 +2358,6 @@ PASSWORDMETER;
     public function setModel($Model, $DataSet = false) {
         $this->_Model = $Model;
 
-        if ($this->InputPrefix) {
-            $this->InputPrefix = $this->_Model->Name;
-        }
         if ($DataSet !== false) {
             $this->SetData($DataSet);
         }
@@ -2591,21 +2609,7 @@ PASSWORDMETER;
     protected function _nameAttribute($FieldName, $Attributes) {
         // Name from attributes overrides the default.
         $Name = $this->escapeFieldName(arrayValueI('name', $Attributes, $FieldName));
-        return (empty($Name)) ? '' : ' name="'.$Name.'"';
-    }
-
-    /**
-     * Decodes the encoded string from a php-form safe-encoded format to the
-     * format it was in when presented to the form.
-     *
-     * @param string $EscapedString
-     * @return unknown
-     */
-    protected function _unescapeString(
-        $EscapedString
-    ) {
-        $Return = str_replace('-dot-', '.', $EscapedString);
-        return urldecode($Return);
+        return (empty($Name)) ? '' : ' name="'.htmlspecialchars($Name, ENT_COMPAT, c('Garden.Charset', 'UTF-8')).'"';
     }
 
     /**
