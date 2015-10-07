@@ -2391,7 +2391,7 @@ class UserModel extends Gdn_Model {
         }
 
         // Optimized searches need at least some criteria before performing a query.
-        if ($Optimize && $this->SQL->WhereCount() == 0 && !$RoleID) {
+        if ($Optimize && $this->SQL->whereCount() == 0 && !$RoleID) {
             $this->SQL->reset();
             return new Gdn_DataSet(array());
         }
