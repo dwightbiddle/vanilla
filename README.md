@@ -2,6 +2,7 @@ _Cloning to your production site? Checkout the 2.1 branch! It's our vetted stabl
 
 ![Vanilla](http://cdn.vanillaforums.com/vanilla-black-logo-400.svg)
 
+[![Build Status](https://img.shields.io/travis/vanilla/vanilla.svg?style=flat-square)](https://travis-ci.org/vanilla/vanilla)
 [![PR Stats](http://issuestats.com/github/vanilla/vanilla/badge/pr?style=flat-square)](http://issuestats.com/github/vanilla/vanilla)
 [![Issue Stats](http://issuestats.com/github/vanilla/vanilla/badge/issue?style=flat-square)](http://issuestats.com/github/vanilla/vanilla)
 
