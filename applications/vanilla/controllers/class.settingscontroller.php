@@ -296,6 +296,10 @@ class SettingsController extends Gdn_Controller {
 
                 if ($this->deliveryType() == DELIVERY_TYPE_ALL) {
                     redirect('vanilla/settings/managecategories');
+                } elseif ($this->deliveryType() === DELIVERY_TYPE_DATA && method_exists($this, 'getCategory')) {
+                    $this->Data = [];
+                    $this->getCategory($CategoryID);
+                    return;
                 }
             } else {
                 unset($CategoryID);
@@ -561,12 +565,21 @@ class SettingsController extends Gdn_Controller {
             }
             $this->Form->setFormValue('CustomPoints', (bool)$this->Form->getFormValue('CustomPoints'));
 
+            // Enforces tinyint values on boolean fields to comply with strict mode
+            $this->Form->setFormValue('HideAllDiscussions', forceBool($this->Form->getFormValue('HideAllDiscussions'), '0', '1', '0'));
+            $this->Form->setFormValue('Archived', forceBool($this->Form->getFormValue('Archived'), '0', '1', '0'));
+            $this->Form->setFormValue('AllowFileUploads', forceBool($this->Form->getFormValue('AllowFileUploads'), '0', '1', '0'));
+
             if ($this->Form->save()) {
                 $Category = CategoryModel::categories($CategoryID);
                 $this->setData('Category', $Category);
 
                 if ($this->deliveryType() == DELIVERY_TYPE_ALL) {
                     redirect('vanilla/settings/managecategories');
+                } elseif ($this->deliveryType() === DELIVERY_TYPE_DATA && method_exists($this, 'getCategory')) {
+                    $this->Data = [];
+                    $this->getCategory($CategoryID);
+                    return;
                 }
             }
         } else {
