@@ -8,14 +8,31 @@
  * @since 2.0
  */
 
+/**
+ * Write alternating strings on each call.
+ *
+ * Useful for adding different classes to alternating lines in a list
+ * or table to enhance their readability.
+ *
+ * @param string $odd The text for the first and every further "odd" call.
+ * @param string $even The text for the second and every further "even" call.
+ * @param string $attributeName The html attribute name that should embrace $even/$odd output.
+ * @return string
+ */
 if (!function_exists('alternate')) {
-    function alternate($Odd = 'Alt', $Even = '', $AttributeName = 'class') {
-        static $i = 0;
-        $Value = $i++ % 2 ? $Odd : $Even;
-        if ($Value != '' && $Even == '' && $AttributeName) {
-            $Value = ' '.$AttributeName.'="'.$Value.'"';
+    function alternate($odd = '', $even = 'Alt', $attributeName = 'class') {
+        static $b = false;
+        if ($b = !$b) {
+            $value = $odd;
+        } else {
+            $value = $even;
         }
-        return $Value;
+
+        if ($value != '' && $attributeName != '') {
+            return ' '.$attributeName.'="'.$value.'"';
+        } else {
+            return $value;
+        }
     }
 }
 
@@ -30,6 +47,47 @@ if (!function_exists('bigPlural')) {
         $Title = sprintf(T($Number == 1 ? $Singular : $Plural), number_format($Number));
 
         return '<span title="'.$Title.'" class="Number">'.Gdn_Format::bigNumber($Number).'</span>';
+    }
+}
+
+/**
+ * Outputs standardized HTML for a badge.
+ * A badge generally designates a count, and displays with a contrasting background.
+ *
+ * @param string|int $badge Info to put into a badge, usually a number.
+ * @return string Badge HTML string.
+ */
+if (!function_exists('badge')) {
+    function badge($badge) {
+        return ' <span class="badge">'.$badge.'</span> ';
+    }
+}
+
+/**
+ * Outputs standardized HTML for a popin badge.
+ * A popin contains data that is injected after the page loads.
+ * A badge generally designates a count, and displays with a contrasting background.
+ *
+ * @param string $rel Endpoint for a popin.
+ * @return string Popin HTML string.
+ */
+if (!function_exists('popin')) {
+    function popin($rel) {
+        return ' <span class="badge Popin js-popin" rel="'.$rel.'"></span> ';
+    }
+}
+
+/**
+ * Outputs standardized HTML for an icon.
+ * Uses the same css class naming conventions as font-vanillicon.
+ *
+ * @param string $icon Name of the icon you want to use, excluding the 'icon-' prefix.
+ * @return string Icon HTML string.
+ */
+if (!function_exists('icon')) {
+    function icon($icon) {
+        $icon = strtolower($icon);
+        return ' <span class="icon icon-'.$icon.'"></span> ';
     }
 }
 
@@ -895,7 +953,7 @@ if (!function_exists('userPhoto')) {
         $Href = url(userUrl($User));
 
         if ($FullUser && $FullUser['Banned']) {
-            $Photo = c('Garden.BannedPhoto', 'http://cdn.vanillaforums.com/images/banned_large.png');
+            $Photo = c('Garden.BannedPhoto', 'https://c3409409.ssl.cf0.rackcdn.com/images/banned_large.png');
             $Title .= ' ('.t('Banned').')';
         }
 
@@ -925,7 +983,7 @@ if (!function_exists('userPhotoUrl')) {
         $FullUser = Gdn::userModel()->getID(val('UserID', $User), DATASET_TYPE_ARRAY);
         $Photo = val('Photo', $User);
         if ($FullUser && $FullUser['Banned']) {
-            $Photo = 'http://cdn.vanillaforums.com/images/banned_100.png';
+            $Photo = 'https://c3409409.ssl.cf0.rackcdn.com/images/banned_100.png';
         }
 
         if ($Photo) {

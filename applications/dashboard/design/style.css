@@ -5394,12 +5394,12 @@ input + .ReactSprite {
 /* Switch to the white icons when hovering over a menuitem sprite */
 .MenuItems a:hover .ReactSprite,
 .MenuItems a:hover .Sprite {
-    background-image: url('http://cdn.vanillaforums.com/images/sprites-14-fff.png');
+    background-image: url('https://c3409409.ssl.cf0.rackcdn.com/images/sprites-14-fff.png');
 }
 
 /* Switch to bordered icons for user reaction overlays */
 .UserReactionWrap .ReactSprite {
-    background-image: url('http://cdn.vanillaforums.com/images/sprites-14-000-bordered.png');
+    background-image: url('https://c3409409.ssl.cf0.rackcdn.com/images/sprites-14-000-bordered.png');
 }
 
 .ActionBlock {
@@ -5421,7 +5421,7 @@ input + .ReactSprite {
 }
 
 .Video.YouTube .VideoPreview:after {
-    background: url('http://cdn.vanillaforums.com/images/youtube-overlay-button.png') 0 -44px no-repeat transparent;
+    background: url('https://c3409409.ssl.cf0.rackcdn.com/images/youtube-overlay-button.png') 0 -44px no-repeat transparent;
     position: absolute;
     display: block;
     content: '';
@@ -6266,4 +6266,24 @@ Styleguide Attachments
 .twitter-card-loaded {
     transition: all 0.2s ease;
     opacity: 1;
+}
+
+/* Effects */
+
+@-webkit-keyframes highlight {
+    0% {background-color: #ff9;}
+    10% {background-color: #ff9;}
+}
+
+@keyframes highlight {
+    0% {background-color: #ff9;}
+    10% {background-color: #ff9;}
+}
+
+.highlight-effect{
+    -webkit-animation: highlight .8s;
+}
+
+.highlight-effect{
+    animation: highlight .8s;
 }

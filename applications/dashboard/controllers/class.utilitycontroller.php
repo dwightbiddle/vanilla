@@ -34,18 +34,6 @@ class UtilityController extends DashboardController {
     );
 
     /**
-     * Serve combined CSS assets
-     *
-     * @param string $themeType Either `desktop` or `mobile`.
-     * @param string $filename The basename of the file to serve
-     * @since 2.1
-     */
-    public function css($themeType, $filename) {
-        $assetModel = new AssetModel();
-        $assetModel->serveCss($themeType, $filename);
-    }
-
-    /**
      * Runs before every call to this controller.
      */
     public function initialize() {
@@ -167,7 +155,14 @@ class UtilityController extends DashboardController {
             // The form requires a postback to do anything.
             $step = 'start';
         } else {
-            $step = !empty($this->Form->getFormValue('Scan')) ? 'scan' : (!empty($this->Form->getFormValue('Run')) ? 'run' : 'start');
+            $scan = $this->Form->getFormValue('Scan');
+            $run = $this->Form->getFormValue('Run');
+            $step = 'start';
+            if (!empty($scan)) {
+                $step = 'scan';
+            } else if (!empty($run)) {
+                $step = 'run';
+            }
         }
 
         switch ($step) {
@@ -264,33 +259,48 @@ class UtilityController extends DashboardController {
     /**
      * Run a structure update on the database.
      *
+     * It should always be possible to call this method, even if no database tables exist yet.
+     * A working forum database should be built from scratch where none exists. Therefore,
+     * it can have no reliance on existing data calls, or they must be able to fail gracefully.
+     *
      * @since 2.0.?
      * @access public
      */
     public function update() {
-        try {
-            // Check for permission or flood control.
-            // These settings are loaded/saved to the database because we don't want the config file storing non/config information.
-            $Now = time();
-            $LastTime = Gdn::get('Garden.Update.LastTimestamp', 0);
+        // Check for permission or flood control.
+        // These settings are loaded/saved to the database because we don't want the config file storing non/config information.
+        $Now = time();
+        $LastTime = 0;
+        $Count = 0;
 
-            if ($LastTime + (60 * 60 * 24) > $Now) {
-                // Check for flood control.
+        try {
+            $LastTime = Gdn::get('Garden.Update.LastTimestamp', 0);
+        } catch (Exception $Ex) {
+            // We don't have a GDN_UserMeta table yet. Sit quietly and one will appear.
+        }
+
+        if ($LastTime + (60 * 60 * 24) > $Now) {
+            // Check for flood control.
+            try {
                 $Count = Gdn::get('Garden.Update.Count', 0) + 1;
-                if ($Count > 5) {
-                    if (!Gdn::session()->checkPermission('Garden.Settings.Manage')) {
-                        // We are only allowing an update of 5 times every 24 hours.
-                        throw permissionException();
-                    }
-                }
-            } else {
-                $Count = 1;
+            } catch (Exception $Ex) {
+                // Once more we sit, watching the breath.
             }
+            if ($Count > 5) {
+                if (!Gdn::session()->checkPermission('Garden.Settings.Manage')) {
+                    // We are only allowing an update of 5 times every 24 hours.
+                    throw permissionException();
+                }
+            }
+        } else {
+            $Count = 1;
+        }
+
+        try {
             Gdn::set('Garden.Update.LastTimestamp', $Now);
             Gdn::set('Garden.Update.Count', $Count);
-        } catch (PermissionException $Ex) {
-            return;
         } catch (Exception $Ex) {
+            // What is a GDN_UserMeta table, really? Suffering.
         }
 
         try {
@@ -466,8 +476,29 @@ class UtilityController extends DashboardController {
      * @param int $Length Number of items to get.
      * @param string $FeedFormat How we want it (valid formats are 'normal' or 'sexy'. OK, not really).
      */
-    public function getFeed($Type = 'news', $Length = 5, $FeedFormat = 'normal') {
-        echo file_get_contents('http://vanillaforums.org/vforg/home/getfeed/'.$Type.'/'.$Length.'/'.$FeedFormat.'/?DeliveryType=VIEW');
+    public function getFeed($type = 'news', $length = 5, $feedFormat = 'normal') {
+        $validTypes = array(
+            'releases',
+            'help',
+            'news',
+            'cloud'
+        );
+        $validFormats = array(
+            'extended',
+            'normal'
+        );
+
+        $length = is_numeric($length) && $length <= 50 ? $length : 5;
+
+        if (!in_array($type, $validTypes)) {
+            $type = 'news';
+        }
+
+        if (!in_array($feedFormat, $validFormats)) {
+            $feedFormat = 'normal';
+        }
+
+        echo file_get_contents("http://vanillaforums.org/vforg/home/getfeed/{$type}/{$length}/{$feedFormat}/?DeliveryType=VIEW");
         $this->deliveryType(DELIVERY_TYPE_NONE);
         $this->render();
     }
@@ -477,6 +508,11 @@ class UtilityController extends DashboardController {
      */
     public function fetchPageInfo($Url = '') {
         $PageInfo = fetchPageInfo($Url);
+
+        if (!empty($PageInfo['Exception'])) {
+            throw new Gdn_UserException($PageInfo['Exception'], 400);
+        }
+
         $this->setData('PageInfo', $PageInfo);
         $this->MasterView = 'default';
         $this->removeCssFile('admin.css');

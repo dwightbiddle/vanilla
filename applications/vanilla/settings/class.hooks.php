@@ -694,7 +694,7 @@ class VanillaHooks implements Gdn_IPlugin {
         $Args = Gdn::request()->Post('Args');
         parse_str($Args, $Args);
         $ResolvedPath = trim(Gdn::request()->Post('ResolvedPath'), '/');
-        $ResolvedArgs = @json_decode(Gdn::request()->Post('ResolvedArgs'));
+        $ResolvedArgs = Gdn::request()->Post('ResolvedArgs');
         $DiscussionID = null;
         $DiscussionModel = new DiscussionModel();
 
@@ -759,7 +759,6 @@ class VanillaHooks implements Gdn_IPlugin {
         $Database = Gdn::database();
         $Config = Gdn::factory(Gdn::AliasConfig);
         $Drop = false; //Gdn::config('Vanilla.Version') === FALSE ? TRUE : FALSE;
-        $Explicit = true;
 
         // Call structure.php to update database
         $Validation = new Gdn_Validation(); // Needed by structure.php to validate permission names

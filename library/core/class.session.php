@@ -56,6 +56,47 @@ class Gdn_Session {
     }
 
     /**
+     * Check the given permission, but also return true if the user has a higher permission.
+     *
+     * @param bool|string $permission The permission to check.  Bool to force true/false.
+     * @return boolean True on valid authorization, false on failure to authorize
+     */
+    public function checkRankedPermission($permission) {
+        $permissionsRanked = array(
+            'Garden.Settings.Manage',
+            'Garden.Community.Manage',
+            'Garden.Moderation.Manage',
+            'Garden.SignIn.Allow'
+        );
+
+        if ($permission === true) {
+            return true;
+        } elseif ($permission === false) {
+            return false;
+        } elseif (in_array($permission, $permissionsRanked)) {
+            // Ordered rank of some permissions, highest to lowest
+            $currentPermissionRank = array_search($permission, $permissionsRanked);
+
+            /**
+             * If the current permission is in our ranked list, iterate through the list, starting from the highest
+             * ranked permission down to our target permission, and determine if any are applicable to the current
+             * user.  This is done so that a user with a permission like Garden.Settings.Manage can still validate
+             * permissions against a Garden.Moderation.Manage permission check, without explicitly having it
+             * assigned to their role.
+             */
+            for ($i = 0; $i <= $currentPermissionRank; $i++) {
+                if ($this->checkPermission($permissionsRanked[$i])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Check to see if the user has at least the given permission.
+        return $this->checkPermission($permission);
+    }
+
+    /**
      * Checks the currently authenticated user's permissions for the specified
      * permission. Returns a boolean value indicating if the action is
      * permitted.
@@ -532,6 +573,34 @@ class Gdn_Session {
             }
         }
         return $Return;
+    }
+
+    /**
+     * Get a public stash value.
+     *
+     * @param string $name The key of the stash.
+     * @param bool $unset Whether or not to unset the stash.
+     * @return mixed Returns the value of the stash.
+     */
+    public function getPublicStash($name, $unset = false) {
+        return $this->stash('@public_'.$name, '', $unset);
+    }
+
+    /**
+     * Sets a public stash value.
+     *
+     * @param string $name The key of the stash value.
+     * @param mixed $value The value of the stash to set. Pass null to clear the key.
+     * @return Gdn_Session $this Returns $this for chaining.
+     */
+    public function setPublicStash($name, $value) {
+        if ($value === null) {
+            $this->stash('@public_'.$name, '', true);
+        } else {
+            $this->stash('@public_'.$name, $value, false);
+        }
+
+        return $this;
     }
 
     /**

@@ -15,10 +15,9 @@
 /**
  * Controller base class.
  *
- * A base class that all controllers can inherit for common controller
- * properties and methods.
+ * A base class that all controllers can inherit for common properties and methods.
  *
- * @method void Render($View = '', $ControllerName = false, $ApplicationFolder = false, $AssetName = 'Content') Render the controller's view.
+ * @method void render($view = '', $controllerName = false, $applicationFolder = false, $assetName = 'Content') Render the controller's view.
  */
 class Gdn_Controller extends Gdn_Pluggable {
 
@@ -580,9 +579,9 @@ class Gdn_Controller extends Gdn_Pluggable {
                     (isset($this->ReflectArgs['sender']) && $this->ReflectArgs['sender'] instanceof Gdn_Pluggable)
                 )
             ) {
-                $ReflectArgs = json_encode(array_slice($this->ReflectArgs, 1));
+                $ReflectArgs = array_slice($this->ReflectArgs, 1);
             } else {
-                $ReflectArgs = json_encode($this->ReflectArgs);
+                $ReflectArgs = $this->ReflectArgs;
             }
 
             $this->_Definitions['ResolvedArgs'] = $ReflectArgs;
@@ -1223,21 +1222,7 @@ class Gdn_Controller extends Gdn_Pluggable {
             $this->setHeader('X-Content-Type-Options', 'nosniff');
 
             // Cross-Origin Resource Sharing (CORS)
-
-            /**
-             * Access-Control-Allow-Origin
-             * If a Origin header is sent by the client, attempt to verify it against the list of
-             * trusted domains in Garden.TrustedDomains.  If the value of Origin is verified as
-             * being part of a trusted domain, add the Access-Control-Allow-Origin header to the
-             * response using the client's Origin header value.
-             */
-            $origin = Gdn::request()->getValueFrom(Gdn_Request::INPUT_SERVER, 'HTTP_ORIGIN', false);
-            if ($origin) {
-                $originHost = parse_url($origin, PHP_URL_HOST);
-                if ($originHost && isTrustedDomain($originHost)) {
-                    $this->setHeader('Access-Control-Allow-Origin', $origin);
-                }
-            }
+            $this->setAccessControl();
         }
 
         if ($this->_DeliveryMethod == DELIVERY_METHOD_TEXT) {
@@ -1306,11 +1291,6 @@ class Gdn_Controller extends Gdn_Pluggable {
             }
 
             $Json = json_encode($this->_Json);
-            // Check for jsonp call.
-            if (($Callback = $this->Request->get('callback', false)) && $this->allowJSONP()) {
-                $Json = $Callback.'('.$Json.')';
-            }
-
             $this->_Json['Data'] = $Json;
             exit($this->_Json['Data']);
         } else {
@@ -1338,6 +1318,24 @@ class Gdn_Controller extends Gdn_Pluggable {
                 } else {
                     echo $View;
                 }
+            }
+        }
+    }
+
+    /**
+     * Set Access-Control-Allow-Origin header.
+     *
+     * If a Origin header is sent by the client, attempt to verify it against the list of
+     * trusted domains in Garden.TrustedDomains.  If the value of Origin is verified as
+     * being part of a trusted domain, add the Access-Control-Allow-Origin header to the
+     * response using the client's Origin header value.
+     */
+    protected function setAccessControl() {
+        $origin = Gdn::request()->getValueFrom(Gdn_Request::INPUT_SERVER, 'HTTP_ORIGIN', false);
+        if ($origin) {
+            $originHost = parse_url($origin, PHP_URL_HOST);
+            if ($originHost && isTrustedDomain($originHost)) {
+                $this->setHeader('Access-Control-Allow-Origin', $origin);
             }
         }
     }
@@ -1457,8 +1455,7 @@ class Gdn_Controller extends Gdn_Pluggable {
             $Data['Exception'] = Gdn_Validation::resultsAsText($this->Form->validationResults());
         }
 
-
-        $this->SendHeaders();
+        $this->sendHeaders();
 
         // Check for a special view.
         $ViewLocation = $this->fetchViewLocation(($this->View ? $this->View : $this->RequestMethod).'_'.strtolower($this->deliveryMethod()), false, false, false);
@@ -1704,7 +1701,7 @@ class Gdn_Controller extends Gdn_Pluggable {
                         } else {
                             $Basename = substr($CssFile, 0, -4);
 
-                            $this->Head->addCss(url("/utility/css/$ThemeType/$Basename-$ETag.css", '//'), 'all', false, $CssInfo['Options']);
+                            $this->Head->addCss(url("/asset/css/$ThemeType/$Basename-$ETag.css", '//'), 'all', false, $CssInfo['Options']);
                         }
                         continue;
                     }

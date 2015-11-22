@@ -29,8 +29,8 @@ class DashboardHooks implements Gdn_IPlugin {
 
         // Enable theme previewing
         if ($Session->isValid()) {
-            $PreviewThemeName = $Session->getPreference('PreviewThemeName', '');
-            $PreviewThemeFolder = $Session->getPreference('PreviewThemeFolder', '');
+            $PreviewThemeName = htmlspecialchars($Session->getPreference('PreviewThemeName', ''));
+            $PreviewThemeFolder = htmlspecialchars($Session->getPreference('PreviewThemeFolder', ''));
             if ($PreviewThemeName != '') {
                 $Sender->Theme = $PreviewThemeName;
                 $Sender->informMessage(
@@ -241,7 +241,10 @@ class DashboardHooks implements Gdn_IPlugin {
                 }
             } else {
                 // There was some sort of error. Let's print that out.
-                trace(Gdn::userModel()->Validation->resultsText(), TRACE_WARNING);
+                foreach (Gdn::userModel()->Validation->resultsArray() as $msg) {
+                    trace($msg, TRACE_ERROR);
+                }
+                Gdn::userModel()->Validation->reset();
             }
         }
     }
