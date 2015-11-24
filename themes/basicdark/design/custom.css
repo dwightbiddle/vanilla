@@ -1,0 +1,116 @@
+body {
+	background-color: #191919;
+	color: #AAA;
+}
+
+body > #Frame > .Head {
+	padding-bottom: 10px;
+}
+
+a {
+	color: #CA0;
+}
+
+a:hover {
+	color: #FC0;
+}
+
+input[type='text'].InputBox {
+	background-color: #292929;
+	border: solid 1px #333;
+	color: #CCC;
+}
+
+textarea {
+	background-color: #292929;
+	color: #AAA;
+	border: solid 1px #333;
+}
+
+textarea:focus {
+	background-color: #292929;
+}
+
+.ItemDiscussion .Meta, .DataList .Meta {
+	color: #999;
+}
+
+.DataList .Item {
+	border-bottom: solid 1px #333;
+}
+
+.BreadcrumbsWrapper {
+	margin: 20px 0;
+	padding: 4px 10px;
+	background-color: #222;
+}
+
+.Row {
+	width: auto;
+	margin: 0 100px;
+}
+
+.Item.Read {
+	background-color: #292929;
+}
+
+.Button, .NavButton {
+	background: #292929;
+	color: #CCC;
+	border: solid 1px #333;
+	text-shadow: none;
+	border-radius: 0;
+	box-shadow: none;
+	-webkit-border-radius: 0;
+	-webkit-box-shadow: none;
+}
+
+.NavButton {
+	margin-top: 5px;
+}
+
+.Button:hover {
+	background-color: #222;
+	color: #CCC;
+	border: solid 1px #333;
+}
+
+.SiteSearch .Button:hover {
+	background-color: #292929;
+	border: none;
+}
+
+#Body .ContentColumn {
+	margin: 0 240px 0 0;
+}
+
+#Frame {
+	background-color: #191919;
+}
+
+#Head {
+	background-color: #222;
+}
+
+#Head .SiteSearch .InputBox {
+	border: solid 1px #333;
+}
+
+#Panel {
+	float: right;
+	padding: 4px 10px;
+	background-color: #222;
+}
+
+#Content {
+	padding: 4px 10px;
+	background-color: #222;
+}
+
+#Foot {
+	color: #555;
+}
+
+#Foot a {
+	color: #777;
+}
