@@ -1,1 +1,1 @@
-xcopy C:\GIT\VanillaCollabatron \\usb-tgcollabap2 /Y /R /D
+xcopy C:\GIT\VanillaCollabatron\%1 \\usb-tgcollabap2\c$\wamp\www\%1 /Y /R /D /E
