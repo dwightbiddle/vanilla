@@ -1,0 +1,1 @@
+xcopy C:\GIT\VanillaCollabatron \\usb-tgcollabap2 /Y /R /D
