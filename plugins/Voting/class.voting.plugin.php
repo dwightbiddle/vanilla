@@ -98,19 +98,6 @@ class VotingPlugin extends Gdn_Plugin {
 			// )
 			, 'div', array('class' => 'StatBox ViewsBox'));
 
-		// Follows
-		$Title = T($Discussion->Bookmarked == '1' ? 'Unbookmark' : 'Bookmark');
-		if ($Session->IsValid()) {
-			echo Wrap(Anchor(
-				Wrap(T('Follows')) . Gdn_Format::BigNumber($Discussion->CountBookmarks),
-				'/vanilla/discussion/bookmark/'.$Discussion->DiscussionID.'/'.$Session->TransientKey().'?Target='.urlencode($Sender->SelfUrl),
-				'',
-				array('title' => $Title)
-			), 'div', array('class' => 'StatBox FollowsBox'));
-		} else {
-			echo Wrap(Wrap(T('Follows')) . $Discussion->CountBookmarks, 'div', array('class' => 'StatBox FollowsBox'));
-		}
-
 		// Votes
 		if ($Session->IsValid()) {
 			echo Wrap(Anchor(
