@@ -519,7 +519,7 @@ class VanillaHooks implements Gdn_IPlugin {
             $sender->addLink('main.categories', array('text' => t('All Categories', 'Categories'), 'url' => '/categories', 'icon' => icon('th-list'), 'sort' => 1));
         }
         if ($home !== 'discussions') {
-            $sender->addLink('main.discussions', array('text' => t('Recent Discussions'), 'url' => '/discussions', 'icon' => icon('discussion'), 'sort' => 1));
+            $sender->addLink('main.discussions', array('text' => t('Recent Ideas'), 'url' => '/discussions', 'icon' => icon('discussion'), 'sort' => 1));
         }
 
         // Add favorites.
@@ -529,7 +529,7 @@ class VanillaHooks implements Gdn_IPlugin {
             $sender->addLink('favorites.bookmarks', array('text' => t('My Bookmarks'),
                 'url' => '/discussions/bookmarked', 'icon' => icon('star'),
                 'badge' => countString(Gdn::session()->User->CountBookmarks, url('/discussions/userbookmarkcount'))));
-            $sender->addLink('favorites.discussions', array('text' => t('My Discussions'),
+            $sender->addLink('favorites.discussions', array('text' => t('My Ideas'),
                 'url' => '/discussions/mine', 'icon' => icon('discussion'),
                 'badge' => countString(Gdn::session()->User->CountDiscussions)));
             $sender->addLink('favorites.drafts', array('text' => t('Drafts'), 'url' => '/drafts',

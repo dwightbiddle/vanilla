@@ -7,7 +7,7 @@ if ($Title == '')
     $Title = t('All Discussions');
 
 $Bookmarked = t('My Bookmarks');
-$MyDiscussions = t('My Discussions');
+$MyDiscussions = t('My Ideas');
 $MyDrafts = t('My Drafts');
 $CountBookmarks = 0;
 $CountDiscussions = 0;
@@ -45,7 +45,7 @@ if (c('Vanilla.Discussions.ShowCounts', true)) {
             echo '<li class="'.$CssClass.'">'.anchor(sprite('SpAllCategories').' '.t('All Categories', 'Categories'), '/categories').'</li> ';
         }
         ?>
-        <li class="Discussions<?php echo strtolower($Controller->ControllerName) == 'discussionscontroller' && strtolower($Controller->RequestMethod) == 'index' ? ' Active' : ''; ?>"><?php echo Gdn_Theme::Link('forumroot', sprite('SpDiscussions').' '.t('Recent Discussions')); ?></li>
+        <li class="Discussions<?php echo strtolower($Controller->ControllerName) == 'discussionscontroller' && strtolower($Controller->RequestMethod) == 'index' ? ' Active' : ''; ?>"><?php echo Gdn_Theme::Link('forumroot', sprite('SpDiscussions').' '.t('Recent Ideas')); ?></li>
         <?php echo Gdn_Theme::Link('activity', sprite('SpActivity').' '.t('Activity'), '<li class="Activities"><a href="%url" class="%class">%text</a></li>'); ?>
         <?php if ($CountBookmarks > 0 || $Controller->RequestMethod == 'bookmarked') { ?>
             <li class="MyBookmarks<?php echo $Controller->RequestMethod == 'bookmarked' ? ' Active' : ''; ?>"><?php echo anchor(sprite('SpBookmarks').' '.$Bookmarked, '/discussions/bookmarked'); ?></li>

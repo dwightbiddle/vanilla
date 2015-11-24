@@ -274,7 +274,7 @@ if (!function_exists('NewComments')):
         if ($Discussion->CountUnreadComments === TRUE) {
             $Title = htmlspecialchars(t("You haven't read this yet."));
 
-            return ' <strong class="HasNew JustNew NewCommentCount" title="'.$Title.'">'.t('new discussion', 'new').'</strong>';
+            return ' <strong class="HasNew JustNew NewCommentCount" title="'.$Title.'">'.t('new idea', 'new').'</strong>';
         } elseif ($Discussion->CountUnreadComments > 0) {
             $Title = htmlspecialchars(Plural($Discussion->CountUnreadComments, "%s new comment since you last read this.", "%s new comments since you last read this."));
 
@@ -319,7 +319,7 @@ if (!function_exists('WriteFilterTabs')):
             $Title = t('All Discussions');
 
         $Bookmarked = t('My Bookmarks');
-        $MyDiscussions = t('My Discussions');
+        $MyDiscussions = t('My Ideas');
         $MyDrafts = t('My Drafts');
         $CountBookmarks = 0;
         $CountDiscussions = 0;

@@ -41,7 +41,7 @@ class PostController extends VanillaController {
 
         $this->setData('CurrentFormName', $CurrentFormName);
         $Forms = array();
-        $Forms[] = array('Name' => 'Discussion', 'Label' => sprite('SpNewDiscussion').t('New Discussion'), 'Url' => 'vanilla/post/discussion');
+        $Forms[] = array('Name' => 'Discussion', 'Label' => sprite('SpNewDiscussion').t('New Idea'), 'Url' => 'vanilla/post/discussion');
         /*
         $Forms[] = array('Name' => 'Question', 'Label' => sprite('SpAskQuestion').t('Ask Question'), 'Url' => 'vanilla/post/discussion');
         $Forms[] = array('Name' => 'Poll', 'Label' => sprite('SpNewPoll').t('New Poll'), 'Url' => 'activity');
@@ -151,7 +151,7 @@ class PostController extends VanillaController {
         } else {
             // Permission to add
             $this->permission('Vanilla.Discussions.Add');
-            $this->title(t('New Discussion'));
+            $this->title(t('New Idea'));
         }
 
         touchValue('Type', $this->Data, 'Discussion');

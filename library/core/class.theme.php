@@ -311,7 +311,7 @@ class Gdn_Theme {
             case 'discussions/mine':
                 TouchValue('Permissions', $Options, 'Garden.SignIn.Allow');
                 if (!$Text) {
-                    $Text = t('My Discussions');
+                    $Text = t('My Ideas');
                 }
                 if ($Session->isValid() && $Session->User->CountDiscussions) {
                     $Class = trim($Class.' HasCount');

@@ -210,7 +210,7 @@ class DiscussionModel extends VanillaModel {
                 'Singular' => 'Discussion',
                 'Plural' => 'Discussions',
                 'AddUrl' => '/post/discussion',
-                'AddText' => 'New Discussion'
+                'AddText' => 'New Idea'
             ));
 
 

@@ -15,5 +15,5 @@ $Definition['EmbeddedNoBodyFormat'] = '{Url}';
 $Definition['CategoryID'] = 'Category';
 
 // Deprecated Translations
-$Definition['Start a New Discussion'] = 'New Discussion';
+$Definition['Start a New Discussion'] = 'New Idea';
 

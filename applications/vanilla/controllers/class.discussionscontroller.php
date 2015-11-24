@@ -96,7 +96,7 @@ class DiscussionsController extends VanillaController {
             if ($Title && ($DefaultControllerRoute == 'discussions')) {
                 $this->title($Title, '');
             } else {
-                $this->title(t('Recent Discussions'));
+                $this->title(t('Recent Ideas'));
             }
         }
         if (!$this->Description()) {
@@ -111,7 +111,7 @@ class DiscussionsController extends VanillaController {
         $this->addModule('NewDiscussionModule');
         $this->addModule('CategoriesModule');
         $this->addModule('BookmarkedModule');
-        $this->setData('Breadcrumbs', array(array('Name' => t('Recent Discussions'), 'Url' => '/discussions')));
+        $this->setData('Breadcrumbs', array(array('Name' => t('Recent Ideas'), 'Url' => '/discussions')));
 
 
         // Set criteria & get discussions data
@@ -478,8 +478,8 @@ class DiscussionsController extends VanillaController {
         $this->addModule('BookmarkedModule');
 
         // Render view
-        $this->setData('Title', t('My Discussions'));
-        $this->setData('Breadcrumbs', array(array('Name' => t('My Discussions'), 'Url' => '/discussions/mine')));
+        $this->setData('Title', t('My Ideas'));
+        $this->setData('Breadcrumbs', array(array('Name' => t('My Ideas'), 'Url' => '/discussions/mine')));
         $this->render();
     }
 

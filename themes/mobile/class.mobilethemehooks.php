@@ -106,7 +106,7 @@ class MobileThemeHooks implements Gdn_IPlugin {
             if ($ButtonType == 'Discussion') {
                 $Sender->Menu->addLink(
                     'NewDiscussion',
-                    img('themes/mobile/design/images/new.png', array('alt' => t('New Discussion'))),
+                    img('themes/mobile/design/images/new.png', array('alt' => t('New Idea'))),
                     '/post/discussion'.(array_key_exists('CategoryID', $Sender->Data) ? '/'.$Sender->Data['CategoryID'] : ''),
                     array('Garden.SignIn.Allow'),
                     array('class' => 'NewDiscussion')

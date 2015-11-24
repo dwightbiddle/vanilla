@@ -14,6 +14,6 @@ Contact Vanilla Forums Inc. at support [at] vanillaforums [dot] com
 function smarty_function_mydiscussions_link($Params, &$Smarty) {
    $Wrap = GetValue('wrap', $Params, 'li');
    return Gdn_Theme::Link('discussions/mine',
-      GetValue('text', $Params, T('My Discussions')),
+      GetValue('text', $Params, T('My Ideas')),
       GetValue('format', $Params, Wrap('<a href="%url" class="%class">%text</a>', $Wrap)));
 }
