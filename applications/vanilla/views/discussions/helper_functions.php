@@ -148,11 +148,6 @@ if (!function_exists('WriteDiscussion')):
                     <?php
                     WriteTags($Discussion);
                     ?>
-                    <span class="MItem MCount ViewCount"><?php
-                        printf(PluralTranslate($Discussion->CountViews,
-                            '%s view html', '%s views html', t('%s view'), t('%s views')),
-                            BigPlural($Discussion->CountViews, '%s view'));
-                        ?></span>
          <span class="MItem MCount CommentCount"><?php
              printf(PluralTranslate($Discussion->CountComments,
                  '%s comment html', '%s comments html', t('%s comment'), t('%s comments')),
