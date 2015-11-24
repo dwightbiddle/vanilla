@@ -88,9 +88,16 @@ endif;
 
 if (!function_exists('WriteDiscussion')):
     function writeDiscussion($Discussion, &$Sender, &$Session) {
+        $SHORT_BODY_CHAR_LIMIT = 300;
         $CssClass = CssClass($Discussion);
         $DiscussionUrl = $Discussion->Url;
         $Category = CategoryModel::categories($Discussion->CategoryID);
+
+        if (strlen($Discussion->Body) > $SHORT_BODY_CHAR_LIMIT)
+            $DiscussionBodyShort = sprintf(t('%1$s...'), substr($Discussion->Body, 0, $SHORT_BODY_CHAR_LIMIT-2));
+        else
+            $DiscussionBodyShort = $Discussion->Body;
+
 
         if ($Session->UserID)
             $DiscussionUrl .= '#latest';
@@ -179,8 +186,7 @@ if (!function_exists('WriteDiscussion')):
                         echo '</span> ';
                     }
 
-                    if ($Sender->data('_ShowCategoryLink', true) && c('Vanilla.Categories.Use') && $Category)
-                        echo wrap(Anchor(htmlspecialchars($Discussion->Category), CategoryUrl($Discussion->CategoryUrlCode)), 'span', array('class' => 'MItem Category '.$Category['CssClass']));
+                    echo '<br><i>'.$DiscussionBodyShort.'</i> ';
 
                     $Sender->fireEvent('DiscussionMeta');
                     ?>
