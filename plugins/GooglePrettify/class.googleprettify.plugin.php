@@ -11,7 +11,7 @@
 $PluginInfo['GooglePrettify'] = array(
     'Name' => 'Syntax Prettifier',
     'Description' => 'Adds pretty syntax highlighting to code in discussions and tab support to the comment box. This is a great addon for communities that support programmers and designers.',
-    'Version' => '1.2.2',
+    'Version' => '1.2.1',
     'RequiredApplications' => array('Vanilla' => '2.0.18'),
     'MobileFriendly' => true,
     'Author' => 'Todd Burry',
@@ -46,12 +46,8 @@ class GooglePrettifyPlugin extends Gdn_Plugin {
     public function addTabby($Sender) {
         if (c('Plugins.GooglePrettify.UseTabby', false)) {
             $Sender->addJsFile('jquery.textarea.js', 'plugins/GooglePrettify');
-            $Sender->Head->addTag('script', array('type' => 'text/javascript', '_sort' => 100), 'jQuery(function () {
-        function init() {
-            $("textarea").not(".Tabby").addClass("Tabby").tabby();
-        }
-        $(document).on("EditCommentFormLoaded", init)
-        init();
+            $Sender->Head->addTag('script', array('type' => 'text/javascript', '_sort' => 100), 'jQuery(document).ready(function () {
+     $("textarea").livequery(function () {$("textarea").tabby();})
 });');
         }
     }
@@ -70,30 +66,19 @@ class GooglePrettifyPlugin extends Gdn_Plugin {
             $Class .= " lang-$Language";
         }
 
-        $Result = "jQuery(function ($) {
+        $Result = "jQuery(document).ready(function($) {
+         var pp = false;
 
-            function init() {
-                $('.Message').each(function () {
-                    if ($(this).data('GooglePrettify')) {
-                        return;
-                    }
-                    $(this).data('GooglePrettify', '1');
+         $('.Message').livequery(function () {
+            $('pre', this).addClass('prettyprint$Class');
+            if (pp)
+               prettyPrint();
+            $('pre', this).removeClass('prettyprint')
+         });
 
-                    pre = $('pre', this).addClass('prettyprint$Class');
-
-                    // Let prettyprint determine styling, rather than the editor.
-                    $('code', this).removeClass('CodeInline');
-                    pre.removeClass('CodeBlock');
-
-                    prettyPrint();
-
-                    pre.removeClass('prettyprint');
-                });
-            }
-
-            $(document).on('CommentAdded PreviewLoaded popupReveal', init);
-            init();
-        });";
+         prettyPrint();
+         pp = true;
+      });";
         return $Result;
     }
 
@@ -125,26 +110,6 @@ class GooglePrettifyPlugin extends Gdn_Plugin {
      * @param PostController $Sender
      */
     public function postController_render_before($Sender) {
-        $this->addPretty($Sender);
-        $this->addTabby($Sender);
-    }
-
-    /**
-     * Add Tabby to conversations textarea.
-     *
-     * @param MessagesController $Sender
-     */
-    public function messagesController_render_before($Sender) {
-        $this->addPretty($Sender);
-        $this->addTabby($Sender);
-    }
-
-    /**
-     * Add Prettify formatting to profile posts.
-     *
-     * @param DiscussionController $Sender
-     */
-    public function profileController_render_before($Sender) {
         $this->addPretty($Sender);
         $this->addTabby($Sender);
     }

@@ -80,7 +80,7 @@ class ConfigurationModule extends Gdn_Module {
 
         if ($HasFiles === null) {
             $HasFiles = false;
-            foreach ($this->schema() as $K => $Row) {
+            foreach ($this->Schema() as $K => $Row) {
                 if (strtolower(val('Control', $Row)) == 'imageupload') {
                     $HasFiles = true;
                     break;
@@ -98,10 +98,10 @@ class ConfigurationModule extends Gdn_Module {
      */
     public function initialize($Schema = null) {
         if ($Schema !== null) {
-            $this->schema($Schema);
+            $this->Schema($Schema);
         }
 
-        $Form = $this->form();
+        $Form = $this->Form();
 
         if ($Form->authenticatedPostBack()) {
             // Grab the data from the form.
@@ -113,27 +113,22 @@ class ConfigurationModule extends Gdn_Module {
                 $Config = $Row['Config'];
 
                 // For API calls make this a sparse save.
-                if ($this->controller()->deliveryType() === DELIVERY_TYPE_DATA && !array_key_exists($Name, $Post)) {
+                if ($this->Controller()->deliveryType() === DELIVERY_TYPE_DATA && !array_key_exists($Name, $Post)) {
                     continue;
                 }
 
                 if (strtolower(val('Control', $Row)) == 'imageupload') {
-                    $Form->saveImage($Name, arrayTranslate($Row, array('Prefix', 'Size')));
+                    $Form->SaveImage($Name, arrayTranslate($Row, array('Prefix', 'Size')));
                 }
 
                 $Value = $Form->getFormValue($Name);
-
-                // Trim all incoming values by default.
-                if (val('Trim', $Row, true)) {
-                    $Value = trim($Value);
-                }
 
                 if ($Value == val('Default', $Value, '')) {
                     $Value = '';
                 }
 
                 $Data[$Config] = $Value;
-                $this->controller()->setData($Name, $Value);
+                $this->Controller()->setData($Name, $Value);
             }
 
             // Save it to the config.
@@ -146,7 +141,7 @@ class ConfigurationModule extends Gdn_Module {
                 $Data[$Row['Name']] = c($Row['Config'], val('Default', $Row, ''));
             }
             $Form->setData($Data);
-            $this->Controller()->Data = array_merge($this->Controller()->Data, $Data);
+            $this->Controller()->Data = $Data;
         }
     }
 

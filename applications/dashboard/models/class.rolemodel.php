@@ -116,26 +116,6 @@ class RoleModel extends Gdn_Model {
     }
 
     /**
-     * Get the category specific permissions for a role.
-     *
-     * @param int $roleID The ID of the role to get the permissions for.
-     * @return array Returns an array of permissions.
-     */
-    public function getCategoryPermissions($roleID) {
-        $permissions = Gdn::permissionModel()->getJunctionPermissions(['RoleID' => $roleID], 'Category');
-        $result = [];
-
-        foreach ($permissions as $perm) {
-            $row = ['CategoryID' => $perm['JunctionID']];
-            unset($perm['Name'], $perm['JunctionID'], $perm['JunctionTable'], $perm['JunctionColumn']);
-            $row += $perm;
-            $result[] = $row;
-        }
-
-        return $result;
-    }
-
-    /**
      * Get all of the roles including their ranking permissions.
      *
      * @return Gdn_DataSet Returns all of the roles with the ranking permissions.
@@ -543,12 +523,8 @@ class RoleModel extends Gdn_Model {
         // Define the primary key in this model's table.
         $this->defineSchema();
 
-        $RoleID = val('RoleID', $FormPostValues);
+        $RoleID = arrayValue('RoleID', $FormPostValues);
         $Insert = $RoleID > 0 ? false : true;
-
-        // Strict-mode.
-        setValue('PersonalInfo', $FormPostValues, forceBool(val('PersonalInfo', $FormPostValues), '0', '1', '0'));
-
         if ($Insert) {
             // Figure out the next role ID.
             $MaxRoleID = $this->SQL->select('r.RoleID', 'MAX')->from('Role r')->get()->value('RoleID', 0);
@@ -562,6 +538,7 @@ class RoleModel extends Gdn_Model {
 
         // Validate the form posted values
         if ($this->validate($FormPostValues, $Insert)) {
+            $Permissions = arrayValue('Permission', $FormPostValues);
             $Fields = $this->Validation->schemaValidationFields();
 
             if ($Insert === false) {
@@ -573,33 +550,7 @@ class RoleModel extends Gdn_Model {
             $Role = $this->GetByRoleID($RoleID);
 
             $PermissionModel = Gdn::permissionModel();
-
-            if (array_key_exists('Permissions', $FormPostValues)) {
-                $globalPermissions = $FormPostValues['Permissions'];
-                $categoryPermissions = val('Category', $globalPermissions, []);
-
-                // Massage the global permissions.
-                unset($globalPermissions['Category']);
-                $globalPermissions['RoleID'] = $RoleID;
-                $globalPermissions['JunctionTable'] = null;
-                $globalPermissions['JunctionColumn'] = null;
-                $globalPermissions['JunctionID'] = null;
-                $Permissions = [$globalPermissions];
-
-                // Massage the category permissions.
-                foreach ($categoryPermissions as $perm) {
-                    $row = $perm;
-                    $row['RoleID'] = $RoleID;
-                    $row['JunctionTable'] = 'Category';
-                    $row['JunctionColumn'] = 'PermissionCategoryID';
-                    $row['JunctionID'] = $row['CategoryID'];
-                    unset($row['CategoryID']);
-                    $Permissions[] = $row;
-                }
-            } else {
-                $Permissions = val('Permission', $FormPostValues);
-                $Permissions = $PermissionModel->pivotPermissions($Permissions, array('RoleID' => $RoleID));
-            }
+            $Permissions = $PermissionModel->pivotPermissions($Permissions, array('RoleID' => $RoleID));
             $PermissionModel->saveAll($Permissions, array('RoleID' => $RoleID));
 
             if (Gdn::cache()->activeEnabled()) {

@@ -205,15 +205,13 @@ class Gdn_Memcached extends Gdn_Cache {
         static $servers = null;
         if (is_null($servers)) {
             $serverList = $this->servers();
-            $numShards = count($serverList);
+            $ns = count($serverList);
             $servers = array();
 
             if ($this->canAutoShard()) {
                 // Use getServerByKey to determine server keys
 
-                // Here we loop until we have found keys for all the servers
-
-                $i = $numShards * 10;
+                $i = $ns * 10;
                 do {
                     $i--; // limited iterations
                     $shardKey = betterRandomString(6, 'a0');
@@ -222,19 +220,19 @@ class Gdn_Memcached extends Gdn_Cache {
                     if ($shardServerName) {
                         $servers[$shardServerName] = $shardKey;
                     }
-                } while ($i > 0 && count($servers) < $numShards);
+                } while ($i > 0 && count($servers) < $ns);
 
             }
 
             if (!count($servers)) {
-                // Use random server keys and hope for the best
+                // Use random server keys
 
                 foreach ($serverList as $server) {
                     $serverName = $server['host'];
                     $servers[$serverName] = betterRandomString(6, 'a0');
                 }
-            }
 
+            }
         }
         return $servers;
     }
@@ -277,63 +275,35 @@ class Gdn_Memcached extends Gdn_Cache {
      *
      * @param string $key data key
      * @param mixed $value data value to shard
-     * @param integer $keySize value size
      * @param int|boolean $shards number of shards, or simply bool true
      * @return array
      */
-    public function shard($key, $value, $keySize, $shards = true) {
+    public function shard($key, $value, $shards) {
 
         $shardMap = $this->shardMap();
         $mapSize = count($shardMap);
-
-        // Apply automated shard limits if shard allocation is automatic
-        if (!is_numeric($shards)) {
-
-            // By default, shard to all servers
-            $shards = $mapSize;
-
-            // Don't over-shard (make sure shards are large enough to warrant their own key)
-            $shardSize = ceil($keySize / $shards);
-            if (Gdn_Cache::CACHE_SHARD_MIN_SIZE > 0 && $shardSize < Gdn_Cache::CACHE_SHARD_MIN_SIZE) {
-                $shards = ceil($keySize / Gdn_Cache::CACHE_SHARD_MIN_SIZE);
-            }
-
-            // Limit the number of shards to a sane value to reduce overhead (but only if $shards wasn't explicitly specified)
-            if (Gdn_Cache::CACHE_SHARD_MAX_SHARDS > 0 && count($shardMap) > Gdn_Cache::CACHE_SHARD_MAX_SHARDS) {
-                $shards = Gdn_Cache::CACHE_SHARD_MAX_SHARDS;
-            }
-
-        }
-
-        // Don't shard to more servers than we know about
-        if ($shards > $mapSize) {
-            $shards = $mapSize;
-        }
-
-        // If we're sharding to less servers than we know about, pick some random ones
-        if ($shards < $mapSize) {
-            $shardSlices = array_rand($shardMap, $shards);
-            $shardMap = array_intersect_key($shardMap, array_fill_keys($shardSlices, true));
-        }
-        $mapSize = count($shardMap);
-
-        // If we're not precisely targeting keys, add a shard for safety
-        if (!$this->canAutoShard()) {
-            $shards = $mapSize + 1;
-        }
-
         $shardMap = array_values($shardMap);
+
+        // Calculate automatic shard count
+        if (!is_numeric($shards)) {
+            $shards = $mapSize;
+
+            // If we're not precisely targeting keys, add a shard for safety
+            if (!$this->canAutoShard()) {
+                $shards = $mapSize + 1;
+            }
+        }
 
         // Prepare manifest
         $data = serialize($value);
         $hash = md5($data);
-        $keySize = strlen($data);
+        $size = strlen($data);
         $manifest = new MemcachedShard();
         $manifest->hash = $hash;
-        $manifest->size = $keySize;
+        $manifest->size = $size;
 
         // Determine chunk size
-        $chunk = ceil($keySize / $shards);
+        $chunk = ceil($size / $shards);
 
         // Write keys
         $chunks = str_split($data, $chunk);
@@ -442,15 +412,9 @@ class Gdn_Memcached extends Gdn_Cache {
 
         $realKey = $this->makeKey($key, $finalOptions);
 
-        // Should auto sharding be enabled?
-        $keySize = strlen(serialize($value));
-        if ($this->hasFeature(Gdn_Cache::FEATURE_SHARD) && $keySize > Gdn_Cache::CACHE_SHARD_AUTO_SIZE) {
-            $finalOptions[Gdn_Cache::FEATURE_SHARD] = true;
-        }
-
-        // Sharding, write real keys and manifest
+        // Sharding, write real keys
         if (array_key_exists(Gdn_Cache::FEATURE_SHARD, $finalOptions) && $shards = $finalOptions[Gdn_Cache::FEATURE_SHARD]) {
-            $manifest = $this->shard($realKey, $value, $keySize, $shards);
+            $manifest = $this->shard($realKey, $value, $shards);
             $shards = $manifest->shards;
             unset($manifest->shards);
 
@@ -475,7 +439,6 @@ class Gdn_Memcached extends Gdn_Cache {
             return Gdn_Cache::CACHEOP_SUCCESS;
         }
 
-        // Unsharded, write key
         $stored = $this->memcache->set($realKey, $value, $expiry);
 
         // Check if things went ok
@@ -545,8 +508,7 @@ class Gdn_Memcached extends Gdn_Cache {
 
         $data = array();
         $hitCache = false;
-        $numKeys = sizeof($realKeys);
-        if ($numKeys) {
+        if ($numKeys = sizeof($realKeys)) {
             $hitCache = true;
             if ($numKeys > 1) {
                 $data = $this->memcache->getMulti($realKeys);
@@ -574,7 +536,7 @@ class Gdn_Memcached extends Gdn_Cache {
                         $serverKeys = $this->memcache->getMultiByKey($serverKey, $keys);
                         $shardKeys = array_merge($shardKeys, $serverKeys);
                     }
-                    ksort($shardKeys, SORT_NATURAL);
+                    ksort($shardKeys);
 
                     // Check subkeys for validity
                     $shardData = implode('', array_values($shardKeys));

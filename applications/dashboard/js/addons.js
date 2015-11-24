@@ -2,7 +2,6 @@ jQuery(document).ready(function($) {
 
     // Ajax-test addons before enabling
     $('a.EnableAddon').click(function(e) {
-        e.preventDefault();
         gdn.clearAddonErrors();
 
         var url = $(this).attr('href');
@@ -77,7 +76,7 @@ jQuery(document).ready(function($) {
                 }
             }
         });
-        return true;
+        return false;
     });
 
     /**

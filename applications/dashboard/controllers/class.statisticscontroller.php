@@ -51,7 +51,7 @@ class StatisticsController extends DashboardController {
         $this->title(t('Vanilla Statistics'));
         $this->enableSlicing($this);
 
-        if ($this->Form->authenticatedPostBack()) {
+        if ($this->Form->isPostBack()) {
             $Flow = true;
 
             if ($Flow && $this->Form->getFormValue('Reregister')) {

@@ -13,7 +13,6 @@
  * This class abstracts the work of doing external requests.
  */
 class ProxyRequest {
-    const MAX_LOG_BODYLENGTH = 500;
 
     protected $CookieJar;
 
@@ -377,8 +376,8 @@ class ProxyRequest {
         $this->action(" transfer mode: {$TransferMode}");
 
         $logContext = array(
-            'requestUrl' => $Url,
-            'requestMethod' => $RequestMethod
+            'url' => $Url,
+            'method' => $RequestMethod
         );
 
         /*
@@ -527,8 +526,8 @@ class ProxyRequest {
         curl_setopt($Handler, CURLOPT_URL, $Url);
         curl_setopt($Handler, CURLOPT_PORT, $Port);
 
-        if (val('LogRequest', $Options, false)) {
-            Logger::event('http_request', Logger::INFO, '{requestMethod} {requestUrl}', $logContext);
+        if (val('Log', $Options, true)) {
+            Logger::event('http_request', Logger::DEBUG, '{method} {url}', $logContext);
         }
 
         $this->curlReceive($Handler);
@@ -542,15 +541,8 @@ class ProxyRequest {
 
         $logContext['responseCode'] = $this->ResponseStatus;
         $logContext['responseTime'] = $this->ResponseTime;
-
-        // Add the response body to the log entry if it isn't too long or we are debugging.
-        $logResponseBody = val('LogResponseBody', $Options, null);
-        $logResponseBody = $logResponseBody === null ?
-            !in_array($RequestMethod, ['GET', 'OPTIONS']) && strlen($this->responseBody) < self::MAX_LOG_BODYLENGTH :
-            $logResponseBody;
-
-        if ($logResponseBody || debug() || (!$this->responseClass('2xx') && val('LogResponseErrorBody', $Options, true))) {
-            if (stripos($this->ContentType, 'application/json') !== false) {
+        if (debug()) {
+            if ($this->ContentType == 'application/json') {
                 $body = @json_decode($this->ResponseBody, true);
                 if (!$body) {
                     $body = $this->ResponseBody;
@@ -560,12 +552,11 @@ class ProxyRequest {
                 $logContext['responseBody'] = $this->ResponseBody;
             }
         }
-        $logLevel = val('Log', $Options, true) ? Logger::INFO : Logger::DEBUG;
         if (val('Log', $Options, true)) {
             if ($this->responseClass('2xx')) {
-                Logger::event('http_response', $logLevel, '{responseCode} {requestMethod} {requestUrl} in {responseTime}s', $logContext);
+                Logger::event('http_response', Logger::DEBUG, '{responseCode} {method} {url} in {responseTime}s', $logContext);
             } else {
-                Logger::event('http_response_error', $logLevel, '{responseCode} {requestMethod} {requestUrl} in {responseTime}s', $logContext);
+                Logger::event('http_response_error', Logger::DEBUG, '{responseCode} {method} {url} in {responseTime}s', $logContext);
             }
         }
 

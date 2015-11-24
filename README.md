@@ -1,10 +1,6 @@
-_Vanilla now uses Composer!
-You can no longer clone this repo right into a web directory - it requires a build step. [Learn more](http://vanillaforums.org/discussion/31083/vanilla-now-uses-compose) or just [download the latest stable build](http://vanillaforums.org/addon/vanilla-core) instead_.
+_Cloning to your production site? Checkout the 2.1 branch! It's our vetted stable release._
 
 ![Vanilla](http://cdn.vanillaforums.com/vanilla-black-logo-400.svg)
-
-[![PR Stats](http://issuestats.com/github/vanilla/vanilla/badge/pr?style=flat-square)](http://issuestats.com/github/vanilla/vanilla)
-[![Issue Stats](http://issuestats.com/github/vanilla/vanilla/badge/issue?style=flat-square)](http://issuestats.com/github/vanilla/vanilla)
 
 ## Howdy, Stranger!
 
@@ -80,13 +76,7 @@ Follow these steps to upgrade Vanilla when a new stable release is announced.
 * Go to `yourforum.com/utility/update` to force any updates needed.
 * If it fails, try it a second times by refreshing the page.
 
-To upgrade **to 2.2**:
-
-* Confirm 2.2 works on your server configuration before upgrading your production install.
-* Update any locales you have installed. Their name format changed in 2.2. Verify they are working after upgrade.
-* Apache users must update their `.htaccess` file.
-
-To upgrade **from 2.0.18 or earlier**, add these steps:
+To upgrade from **2.0.18 or earlier**, add these steps:
 
 * Delete the file [`/themes/mobile/views/discussions/helper_functions.php`](https://github.com/vanillaforums/Garden/blob/2.0/themes/mobile/views/discussions/helper_functions.php)
 * Delete the file [`/applications/dashboard/views/default.master.php`](https://github.com/vanilla/vanilla/blob/2.0/applications/dashboard/views/default.master.php)
@@ -116,10 +106,6 @@ To upgrade from Vanilla **1.0**, you must export your data using the Vanilla Por
 * Sign the [Contributors' Agreement](http://vanillaforums.org/contributors) to send us code.
 * Use pull requests against the correct release (currently `stage` for most changes).
 * Keep our to-do list fresh by reviewing our open issues for resolved or duplicated items.
-
-## Buidling with Phing
-
-Vanilla includes a  buildfile for [Phing](https://www.phing.info/), a build system for PHP, in the build directory. Running the `phing` command from the build directory will create a deploy-ready copy of Vanilla.  This process automatically fetches dependencies with Composer, filters out any unnecessary developer files (Git files/directories, .editorconfig, unit tests, etc.) and compresses the result into an archive.
 
 ## Version Control Strategy
 

@@ -201,7 +201,7 @@ class StopForumSpamPlugin extends Gdn_Plugin {
         ));
 
         $Sender->addSideMenu('dashboard/settings/plugins');
-        $Sender->setData('Title', sprintf(t('%s Settings'), 'Stop Forum Spam'));
+        $Sender->setData('Title', t('Stop Forum Spam Settings'));
         $Sender->ConfigurationModule = $Conf;
         $Conf->renderAll();
     }

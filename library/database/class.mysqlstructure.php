@@ -114,8 +114,8 @@ class Gdn_MySQLStructure extends Gdn_DatabaseStructure {
         $this->Database->DatabasePrefix = $OldPrefix;
 
         // Get the definition for this column
-        $OldColumn = val($OldName, $Schema);
-        $NewColumn = val($NewName, $Schema);
+        $OldColumn = arrayValue($OldName, $Schema);
+        $NewColumn = arrayValue($NewName, $Schema);
 
         // Make sure that one column, or the other exists
         if (!$OldColumn && !$NewColumn) {
@@ -233,7 +233,7 @@ class Gdn_MySQLStructure extends Gdn_DatabaseStructure {
         }
         // Build the rest of the keys.
         foreach ($Indexes as $IndexType => $IndexGroups) {
-            $CreateString = val($IndexType, array('FK' => 'key', 'IX' => 'index'));
+            $CreateString = arrayValue($IndexType, array('FK' => 'key', 'IX' => 'index'));
             foreach ($IndexGroups as $IndexGroup => $ColumnNames) {
                 if (!$IndexGroup) {
                     foreach ($ColumnNames as $ColumnName) {
@@ -371,7 +371,7 @@ class Gdn_MySQLStructure extends Gdn_DatabaseStructure {
 
         // Make the multi-column keys into sql statements.
         foreach ($Indexes as $ColumnKeyType => $IndexGroups) {
-            $CreateType = val($ColumnKeyType, array('index' => 'index', 'key' => 'key', 'unique' => 'unique index', 'fulltext' => 'fulltext index', 'primary' => 'primary key'));
+            $CreateType = arrayValue($ColumnKeyType, array('index' => 'index', 'key' => 'key', 'unique' => 'unique index', 'fulltext' => 'fulltext index', 'primary' => 'primary key'));
 
             if ($ColumnKeyType == 'primary') {
                 $Result['PRIMARY'] = 'primary key (`'.implode('`, `', $IndexGroups['']).'`)';
@@ -650,16 +650,10 @@ class Gdn_MySQLStructure extends Gdn_DatabaseStructure {
     /**
      *
      *
-     * @param stdClass $column
+     * @param string $Column
      */
-    protected function _defineColumn($column) {
-        $column = clone $column;
-
-        $typeAliases = [
-            'ipaddress' => ['Type' => 'varchar', 'Length' => 15]
-        ];
-
-        $validColumnTypes = array(
+    protected function _defineColumn($Column) {
+        $ValidColumnTypes = array(
             'tinyint',
             'smallint',
             'mediumint',
@@ -683,50 +677,42 @@ class Gdn_MySQLStructure extends Gdn_DatabaseStructure {
             'blob',
             'mediumblob',
             'longblob',
-            'bit'
+            'bit',
         );
 
-        $column->Type = strtolower($column->Type);
-
-        if (array_key_exists($column->Type, $typeAliases)) {
-            foreach ($typeAliases[$column->Type] as $key => $value) {
-                setValue($key, $column, $value);
-            }
+        if (!is_array($Column->Type) && !in_array(strtolower($Column->Type), $ValidColumnTypes)) {
+            throw new Exception(sprintf(t('The specified data type (%1$s) is not accepted for the MySQL database.'), $Column->Type));
         }
 
-        if (!in_array($column->Type, $validColumnTypes)) {
-            throw new Exception(sprintf(t('The specified data type (%1$s) is not accepted for the MySQL database.'), $column->Type));
-        }
-
-        $Return = "`{$column->Name}` {$column->Type}";
+        $Return = '`'.$Column->Name.'` '.$Column->Type;
 
         $LengthTypes = $this->types('length');
-        if ($column->Length != '' && in_array($column->Type, $LengthTypes)) {
-            if ($column->Precision != '') {
-                $Return .= '('.$column->Length.', '.$column->Precision.')';
+        if ($Column->Length != '' && in_array(strtolower($Column->Type), $LengthTypes)) {
+            if ($Column->Precision != '') {
+                $Return .= '('.$Column->Length.', '.$Column->Precision.')';
             } else {
-                $Return .= '('.$column->Length.')';
+                $Return .= '('.$Column->Length.')';
             }
         }
-        if (property_exists($column, 'Unsigned') && $column->Unsigned) {
+        if (property_exists($Column, 'Unsigned') && $Column->Unsigned) {
             $Return .= ' unsigned';
         }
 
-        if (is_array($column->Enum)) {
-            $Return .= "('".implode("','", $column->Enum)."')";
+        if (is_array($Column->Enum)) {
+            $Return .= "('".implode("','", $Column->Enum)."')";
         }
 
-        if (!$column->AllowNull) {
+        if (!$Column->AllowNull) {
             $Return .= ' not null';
         } else {
             $Return .= ' null';
         }
 
-        if (!is_null($column->Default) && $column->Type !== 'timestamp') {
-            $Return .= " default ".self::_quoteValue($column->Default);
+        if (!(is_null($Column->Default)) && strcasecmp($Column->Type, 'timestamp') != 0) {
+            $Return .= " default ".self::_quoteValue($Column->Default);
         }
 
-        if ($column->AutoIncrement) {
+        if ($Column->AutoIncrement) {
             $Return .= ' auto_increment';
         }
 

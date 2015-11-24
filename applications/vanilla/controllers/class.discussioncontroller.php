@@ -64,8 +64,6 @@ class DiscussionController extends VanillaController {
         }
 
         if (!is_object($this->Discussion)) {
-            $this->EventArguments['DiscussionID'] = $DiscussionID;
-            $this->fireEvent('DiscussionNotFound');
             throw notFoundException('Discussion');
         }
 
@@ -181,10 +179,8 @@ class DiscussionController extends VanillaController {
             $this->addDefinition('NotifyNewDiscussion', 1);
         }
 
-        // Make sure to set the user's discussion watch records if this is not an API request.
-        if ($this->deliveryType() !== DELIVERY_TYPE_DATA) {
-            $this->CommentModel->SetWatch($this->Discussion, $Limit, $this->Offset, $this->Discussion->CountComments);
-        }
+        // Make sure to set the user's discussion watch records
+        $this->CommentModel->SetWatch($this->Discussion, $Limit, $this->Offset, $this->Discussion->CountComments);
 
         // Build a pager
         $PagerFactory = new Gdn_PagerFactory();
@@ -211,9 +207,8 @@ class DiscussionController extends VanillaController {
         $this->Form->addHidden('CommentID', '');
 
         // Look in the session stash for a comment
-        $StashComment = $Session->getPublicStash('CommentForDiscussionID_'.$this->Discussion->DiscussionID);
+        $StashComment = $Session->Stash('CommentForDiscussionID_'.$this->Discussion->DiscussionID, '', false);
         if ($StashComment) {
-            $this->Form->setValue('Body', $StashComment);
             $this->Form->setFormValue('Body', $StashComment);
         }
 
@@ -251,7 +246,6 @@ class DiscussionController extends VanillaController {
 
         // Report the discussion id so js can use it.
         $this->addDefinition('DiscussionID', $DiscussionID);
-        $this->addDefinition('Category', $this->data('Category.Name'));
 
         $this->fireEvent('BeforeDiscussionRender');
 
@@ -937,7 +931,7 @@ body { background: transparent !important; }
             $this->Form->setFormValue('Body', $Draft->Body);
         } else {
             // Look in the session stash for a comment
-            $StashComment = Gdn::session()->getPublicStash('CommentForForeignID_'.$ForeignSource['vanilla_identifier']);
+            $StashComment = Gdn::session()->Stash('CommentForForeignID_'.$ForeignSource['vanilla_identifier'], '', false);
             if ($StashComment) {
                 $this->Form->setValue('Body', $StashComment);
                 $this->Form->setFormValue('Body', $StashComment);
@@ -985,7 +979,7 @@ body { background: transparent !important; }
      */
     public function refetchPageInfo($DiscussionID) {
         // Make sure we are posting back.
-        if (!$this->Request->isAuthenticatedPostBack(true)) {
+        if (!$this->Request->isPostBack()) {
             throw permissionException('Javascript');
         }
 

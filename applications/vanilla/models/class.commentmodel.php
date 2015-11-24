@@ -810,7 +810,7 @@ class CommentModel extends VanillaModel {
         }
 
         // Validate $CommentID and whether this is an insert
-        $CommentID = val('CommentID', $FormPostValues);
+        $CommentID = arrayValue('CommentID', $FormPostValues);
         $CommentID = is_numeric($CommentID) && $CommentID > 0 ? $CommentID : false;
         $Insert = $CommentID === false;
         if ($Insert) {
@@ -831,12 +831,6 @@ class CommentModel extends VanillaModel {
                 $Fields = $this->Validation->SchemaValidationFields();
                 $Fields = RemoveKeyFromArray($Fields, $this->PrimaryKey);
 
-                // Check for spam
-                $spam = SpamModel::isSpam('Comment', array_merge($Fields, array('CommentID' => $CommentID)));
-                if ($spam) {
-                    return SPAM;
-                }
-
                 if ($Insert === false) {
                     // Log the save.
                     LogModel::LogChange('Edit', 'Comment', array_merge($Fields, array('CommentID' => $CommentID)));
@@ -847,6 +841,12 @@ class CommentModel extends VanillaModel {
                     // Make sure that the comments get formatted in the method defined by Garden.
                     if (!val('Format', $Fields) || c('Garden.ForceInputFormatter')) {
                         $Fields['Format'] = Gdn::config('Garden.InputFormatter', '');
+                    }
+
+                    // Check for spam
+                    $Spam = SpamModel::IsSpam('Comment', $Fields);
+                    if ($Spam) {
+                        return SPAM;
                     }
 
                     // Check for approval
@@ -896,7 +896,7 @@ class CommentModel extends VanillaModel {
      */
     public function save2($CommentID, $Insert, $CheckExisting = true, $IncUser = false) {
         $Session = Gdn::session();
-        $discussionModel = new DiscussionModel();
+        $UserModel = Gdn::userModel();
 
         // Load comment data
         $Fields = $this->getID($CommentID, DATASET_TYPE_ARRAY);
@@ -905,7 +905,7 @@ class CommentModel extends VanillaModel {
         $DiscussionModel = new DiscussionModel();
         $DiscussionID = val('DiscussionID', $Fields);
         $Discussion = $DiscussionModel->getID($DiscussionID);
-        $Session->setPublicStash('CommentForForeignID_'.GetValue('ForeignID', $Discussion), null);
+        $Session->Stash('CommentForForeignID_'.GetValue('ForeignID', $Discussion));
 
         // Make a quick check so that only the user making the comment can make the notification.
         // This check may be used in the future so should not be depended on later in the method.
@@ -993,7 +993,7 @@ class CommentModel extends VanillaModel {
             $BookmarkData = $DiscussionModel->GetBookmarkUsers($DiscussionID);
             foreach ($BookmarkData->result() as $Bookmark) {
                 // Check user can still see the discussion.
-                if (!$discussionModel->canView($Discussion, $Bookmark->UserID)) {
+                if (!$UserModel->GetCategoryViewPermission($Bookmark->UserID, $Discussion->CategoryID)) {
                     continue;
                 }
 
@@ -1005,7 +1005,7 @@ class CommentModel extends VanillaModel {
             // Notify users who have participated in the discussion.
             $ParticipatedData = $DiscussionModel->GetParticipatedUsers($DiscussionID);
             foreach ($ParticipatedData->result() as $UserRow) {
-                if (!$discussionModel->canView($Discussion, $UserRow->UserID)) {
+                if (!$UserModel->GetCategoryViewPermission($UserRow->UserID, $Discussion->CategoryID)) {
                     continue;
                 }
 
@@ -1018,7 +1018,7 @@ class CommentModel extends VanillaModel {
             if ($Discussion != false) {
                 $InsertUserID = val('InsertUserID', $Discussion);
                 // Check user can still see the discussion.
-                if ($discussionModel->canView($Discussion, $InsertUserID)) {
+                if ($UserModel->GetCategoryViewPermission($InsertUserID, $Discussion->CategoryID)) {
                     $Activity['NotifyUserID'] = $InsertUserID;
                     $Activity['Data']['Reason'] = 'mine';
                     $ActivityModel->Queue($Activity, 'DiscussionComment');
@@ -1033,16 +1033,15 @@ class CommentModel extends VanillaModel {
 
             // Notify any users who were mentioned in the comment.
             $Usernames = GetMentions($Fields['Body']);
-            $userModel = Gdn::userModel();
             foreach ($Usernames as $i => $Username) {
-                $User = $userModel->GetByUsername($Username);
+                $User = $UserModel->GetByUsername($Username);
                 if (!$User) {
                     unset($Usernames[$i]);
                     continue;
                 }
 
                 // Check user can still see the discussion.
-                if (!$discussionModel->canView($Discussion, $User->UserID)) {
+                if (!$UserModel->GetCategoryViewPermission($User->UserID, $Discussion->CategoryID)) {
                     continue;
                 }
 
@@ -1111,8 +1110,7 @@ class CommentModel extends VanillaModel {
 
             $UserID = $Row['UserID'];
             // Check user can still see the discussion.
-            $discussionModel = new DiscussionModel();
-            if (!$discussionModel->canView($Discussion, $UserID)) {
+            if (!Gdn::userModel()->GetCategoryViewPermission($UserID, $Category['CategoryID'])) {
                 continue;
             }
 
@@ -1275,7 +1273,7 @@ class CommentModel extends VanillaModel {
      * Delete a comment.
      *
      * This is a hard delete that completely removes it from the database.
-     * Events: DeleteComment, BeforeDeleteComment.
+     * Events: DeleteComment.
      *
      * @since 2.0.0
      * @access public
@@ -1303,7 +1301,6 @@ class CommentModel extends VanillaModel {
 
         $this->EventArguments['Discussion'] = $Discussion;
         $this->fireEvent('DeleteComment');
-        $this->fireEvent('BeforeDeleteComment');
 
         // Log the deletion.
         $Log = val('Log', $Options, 'Delete');

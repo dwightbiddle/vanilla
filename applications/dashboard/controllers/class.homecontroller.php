@@ -22,6 +22,7 @@ class HomeController extends Gdn_Controller {
     public function initialize() {
         $this->Head = new HeadModule($this);
         $this->addJsFile('jquery.js');
+        $this->addJsFile('jquery.livequery.js');
         $this->addJsFile('jquery.form.js');
         $this->addJsFile('jquery.popup.js');
         $this->addJsFile('jquery.gardenhandleajaxform.js');
@@ -52,9 +53,6 @@ class HomeController extends Gdn_Controller {
         $this->MasterView = 'default';
 
         $this->CssClass = 'SplashMessage NoPanel';
-        if ($this->data('CssClass')) {
-            $this->CssClass .= ' '.$this->data('CssClass');
-        }
 
         $this->setData('_NoMessages', true);
 
@@ -196,7 +194,7 @@ class HomeController extends Gdn_Controller {
      * @since 2.0.0
      * @access public
      */
-    public function unauthorized() {
+    public function permission() {
         Gdn_Theme::section('Error');
 
         if ($this->deliveryMethod() == DELIVERY_METHOD_XHTML) {

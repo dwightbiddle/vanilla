@@ -1,7 +1,7 @@
 <?php if (!defined('APPLICATION')) exit(); ?>
 
 <style>
-    .Connection-Header * {
+    .Conneciton-Header * {
         line-height: 48px;
         position: relative;
     }

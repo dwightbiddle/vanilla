@@ -55,10 +55,9 @@ echo Gdn::slice('/dashboard/role/defaultroleswarning');
                 </tbody>
             </table>
         </li>
-        <?php if ($this->Data('_ManageCaptcha')) : ?>
         <li id="CaptchaSettings">
             <div
-                class="Info"><?php echo t('The basic registration form requires new users to copy text from a CAPTCHA image.', '<strong>The basic registration form requires</strong> new users to copy text from a CAPTCHA image to keep spammers out of the site. You need an account at <a href="http://recaptcha.net/">recaptcha.net</a>. Signing up is FREE and easy. Once you have signed up, come back here and enter the following settings:'); ?></div>
+                class="Info"><?php echo t('Captcha Explanation', 'The basic registration form requires that new users copy text from a "Captcha" image to help prevent spam.', '<strong>The basic registration form requires</strong> that new users copy text from a "Captcha" image to keep spammers out of the site. You need an account at <a href="http://recaptcha.net/">recaptcha.net</a>. Signing up is FREE and easy. Once you have signed up, come back here and enter the following settings:'); ?></div>
             <table class="Label AltColumns">
                 <thead>
                 <tr>
@@ -78,7 +77,6 @@ echo Gdn::slice('/dashboard/role/defaultroleswarning');
                 </tbody>
             </table>
         </li>
-        <?php endif; ?>
         <li id="InvitationExpiration">
             <?php
             echo $this->Form->label('Invitations will expire', 'Garden.Registration.InviteExpiration');
@@ -116,7 +114,7 @@ echo Gdn::slice('/dashboard/role/defaultroleswarning');
                         $CssClass .= ' Last';
 
                     $CssClass = trim($CssClass);
-                    $CurrentValue = val($Role['RoleID'], $this->ExistingRoleInvitations, false);
+                    $CurrentValue = arrayValue($Role['RoleID'], $this->ExistingRoleInvitations, false);
                     ?>
                     <tr<?php echo $CssClass != '' ? ' class="'.$CssClass.'"' : ''; ?>>
                         <th><?php echo $Role['Name']; ?></th>

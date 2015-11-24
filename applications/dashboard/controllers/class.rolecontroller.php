@@ -164,11 +164,6 @@ class RoleController extends DashboardController {
             // If the form has been posted back...
             // 2. Save the data (validation occurs within):
             if ($RoleID = $this->Form->save()) {
-                if ($this->deliveryType() === DELIVERY_TYPE_DATA) {
-                    $this->index($RoleID);
-                    return;
-                }
-
                 $this->informMessage(t('Your changes have been saved.'));
                 $this->RedirectUrl = url('dashboard/role');
                 // Reload the permission data.
@@ -187,51 +182,37 @@ class RoleController extends DashboardController {
      * @since 2.0.0
      * @access public
      */
-    public function index($roleID = null) {
+    public function index($RoleID = null) {
         $this->_permission();
 
         $this->addSideMenu('dashboard/role');
         $this->addJsFile('jquery.tablednd.js');
+        $this->addJsFile('jquery-ui.js');
         $this->title(t('Roles & Permissions'));
 
-        if (!$roleID) {
-            $roles = $this->RoleModel->getWithRankPermissions()->resultArray();
+        if (!$RoleID) {
+            $RoleData = $this->RoleModel->getWithRankPermissions()->resultArray();
 
             // Check to see which roles can be modified.
-            foreach ($roles as &$row) {
-                $canModify = true;
+            foreach ($RoleData as &$Row) {
+                $CanModify = true;
 
                 if (!Gdn::session()->checkPermission('Garden.Settings.Manage')) {
-                    foreach ($this->RoleModel->RankPermissions as $permission) {
-                        if ($row[$permission] && !Gdn::session()->checkPermission($permission)) {
-                            $canModify = false;
+                    foreach ($this->RoleModel->RankPermissions as $Permission) {
+                        if ($Row[$Permission] && !Gdn::session()->checkPermission($Permission)) {
+                            $CanModify = false;
                             break;
                         }
                     }
                 }
-                $row['CanModify'] = $canModify;
+                $Row['CanModify'] = $CanModify;
             }
-            $this->setData('Roles', $roles);
-        } elseif ($this->deliveryType() === DELIVERY_TYPE_DATA) {
-            // This is an API request. Get the role in a nicer format.
-            $role = $this->RoleModel->getID($roleID, DATASET_TYPE_ARRAY);
-
-            // Get the global permissions.
-            $permissions = Gdn::permissionModel()->getGlobalPermissions($roleID);
-            unset($permissions['PermissionID']);
-
-            // Get the per-category permissions.
-            $permissions['Category'] = $this->RoleModel->getCategoryPermissions($roleID);
-
-            $role['Permissions'] = $permissions;
-
-            $this->setData('Role', $role);
-            saveToConfig('Api.Clean', false, false);
         } else {
-            $Role = $this->RoleModel->getID($roleID);
-            $this->setData('Roles', [$Role]);
+            $Role = $this->RoleModel->getID($RoleID);
+            $RoleData = array($Role);
         }
 
+        $this->setData('Roles', $RoleData);
         $this->render();
     }
 

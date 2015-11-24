@@ -16,9 +16,6 @@ class SetupController extends DashboardController {
     /** @var array Models to automatically instantiate. */
     public $Uses = array('Form', 'Database');
 
-    /** @var  Gdn_Form $Form */
-    public $Form;
-
     /**
      * Add CSS & module, set error master view. Automatically run on every use.
      *
@@ -48,7 +45,9 @@ class SetupController extends DashboardController {
         // Fatal error if Garden has already been installed.
         $Installed = c('Garden.Installed');
         if ($Installed) {
-            throw new Gdn_UserException('Vanilla is installed!', 409);
+            $this->View = "AlreadyInstalled";
+            $this->render();
+            return;
         }
 
         if (!$this->_CheckPrerequisites()) {
@@ -86,25 +85,12 @@ class SetupController extends DashboardController {
                     // Now that the application is installed, select a more user friendly error page.
                     $Config = array('Garden.Installed' => true);
                     saveToConfig($Config);
-                    $this->setData('Installed', true);
-                    $this->fireAs('UpdateModel')->fireEvent('AfterStructure');
                     $this->fireEvent('Installed');
 
-                    // Go to the dashboard.
-                    if ($this->deliveryType() === DELIVERY_TYPE_ALL) {
-                        redirect('/settings/gettingstarted');
-                    }
-                } elseif ($this->deliveryType() === DELIVERY_TYPE_DATA) {
-                    $maxCode = 0;
-                    $messages = array();
+                    PermissionModel::ResetAllRoles();
 
-                    foreach ($this->Form->errors() as $row) {
-                        list($code, $message) = $row;
-                        $maxCode = max($maxCode, $code);
-                        $messages[] = $message;
-                    }
-
-                    throw new Gdn_UserException(implode(' ', $messages), $maxCode);
+                    // Go to the dashboard
+                    redirect('/settings/gettingstarted');
                 }
             }
         }
@@ -134,7 +120,7 @@ class SetupController extends DashboardController {
         // $this->LocaleData = array_combine($AvailableLocales, $AvailableLocales);
 
         // If seeing the form for the first time...
-        if (!$this->Form->isPostback()) {
+        if (!$this->Form->IsPostback()) {
             // Force the webroot using our best guesstimates
             $ConfigurationModel->Data['Database.Host'] = 'localhost';
             $this->Form->setData($ConfigurationModel->Data);
@@ -181,12 +167,12 @@ class SetupController extends DashboardController {
                 // Apply the validation results to the form(s)
                 $this->Form->setValidationResults($ConfigurationModel->validationResults());
             } else {
-                $Host = array_shift(explode(':', Gdn::request()->requestHost()));
-                $Domain = Gdn::request()->domain();
+                $Host = array_shift(explode(':', Gdn::request()->RequestHost()));
+                $Domain = Gdn::request()->Domain();
 
                 // Set up cookies now so that the user can be signed in.
                 $ExistingSalt = c('Garden.Cookie.Salt', false);
-                $ConfigurationFormValues['Garden.Cookie.Salt'] = ($ExistingSalt) ? $ExistingSalt : betterRandomString(16, 'Aa0');
+                $ConfigurationFormValues['Garden.Cookie.Salt'] = ($ExistingSalt) ? $ExistingSalt : RandomString(10);
                 $ConfigurationFormValues['Garden.Cookie.Domain'] = ''; // Don't set this to anything by default. # Tim - 2010-06-23
                 // Additional default setup values.
                 $ConfigurationFormValues['Garden.Registration.ConfirmEmail'] = true;
@@ -199,13 +185,13 @@ class SetupController extends DashboardController {
                 if ($NewLocale !== false && Gdn::config('Garden.Locale') != $NewLocale) {
                     $ApplicationManager = new Gdn_ApplicationManager();
                     $Locale = Gdn::locale();
-                    $Locale->set($NewLocale, $ApplicationManager->enabledApplicationFolders(), Gdn::pluginManager()->enabledPluginFolders(), true);
+                    $Locale->set($NewLocale, $ApplicationManager->EnabledApplicationFolders(), Gdn::pluginManager()->EnabledPluginFolders(), true);
                 }
 
                 // Install db structure & basic data.
                 $Database = Gdn::database();
-                $Database->init();
-                $Drop = false;
+                $Database->Init();
+                $Drop = false; // Gdn::config('Garden.Version') === FALSE ? TRUE : FALSE;
                 $Explicit = false;
                 try {
                     include(PATH_APPLICATIONS.DS.'dashboard'.DS.'settings'.DS.'structure.php');
@@ -248,7 +234,7 @@ class SetupController extends DashboardController {
                 $Disconnected = !(bool)@fsockopen('ajax.googleapis.com', 80);
 
                 saveToConfig(array(
-                    'Garden.Version' => val('Version', val('Dashboard', $ApplicationInfo, array()), 'Undefined'),
+                    'Garden.Version' => arrayValue('Version', val('Dashboard', $ApplicationInfo, array()), 'Undefined'),
                     'Garden.Cdns.Disable' => $Disconnected,
                     'Garden.CanProcessImages' => function_exists('gd_info'),
                     'EnabledPlugins.GettingStarted' => 'GettingStarted', // Make sure the getting started plugin is enabled
@@ -284,7 +270,7 @@ class SetupController extends DashboardController {
         // Make sure that the correct filesystem permissions are in place
         $PermissionProblem = false;
 
-        // Make sure the appropriate folders are writable.
+        // Make sure the appropriate folders are writeable.
         $ProblemDirectories = array();
         if (!is_readable(PATH_CONF) || !IsWritable(PATH_CONF)) {
             $ProblemDirectories[] = PATH_CONF;
@@ -311,26 +297,21 @@ class SetupController extends DashboardController {
             $this->Form->addError($PermissionError.$PermissionHelp);
         }
 
-        // Make sure the config folder is writable.
+        // Make sure the config folder is writeable
         if (!$PermissionProblem) {
             $ConfigFile = Gdn::config()->DefaultPath();
+            if (!file_exists($ConfigFile)) {
+                file_put_contents($ConfigFile, '');
+            }
 
-            if (file_exists($ConfigFile)) {
-                // Make sure the config file is writable.
-                if (!is_readable($ConfigFile) || !IsWritable($ConfigFile)) {
-                    $this->Form->addError(sprintf(t('Your configuration file does not have the correct permissions. PHP needs to be able to read and write to this file: <code>%s</code>'), $ConfigFile));
-                    $PermissionProblem = true;
-                }
-            } else {
-                // Make sure the config file can be created.
-                if (!is_writeable(dirname($ConfigFile))) {
-                    $this->Form->addError(sprintf(t('Your configuration file cannot be created. PHP needs to be able to create this file: <code>%s</code>'), $ConfigFile));
-                    $PermissionProblem = true;
-                }
+            // Make sure the config file is writeable
+            if (!is_readable($ConfigFile) || !IsWritable($ConfigFile)) {
+                $this->Form->addError(sprintf(t('Your configuration file does not have the correct permissions. PHP needs to be able to read and write to this file: <code>%s</code>'), $ConfigFile));
+                $PermissionProblem = true;
             }
         }
 
-        // Make sure the cache folder is writable
+        // Make sure the cache folder is writeable
         if (!$PermissionProblem) {
             if (!file_exists(PATH_CACHE.'/Smarty')) {
                 mkdir(PATH_CACHE.'/Smarty');

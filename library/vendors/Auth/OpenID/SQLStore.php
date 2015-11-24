@@ -85,7 +85,7 @@ class Auth_OpenID_SQLStore extends Auth_OpenID_OpenIDStore {
      * the name of the table used for storing nonces.  The default
      * value is 'oid_nonces'.
      */
-    function __construct($connection,
+    function Auth_OpenID_SQLStore($connection,
                                   $associations_table = null,
                                   $nonces_table = null)
     {

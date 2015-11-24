@@ -8,31 +8,14 @@
  * @since 2.0
  */
 
-/**
- * Write alternating strings on each call.
- *
- * Useful for adding different classes to alternating lines in a list
- * or table to enhance their readability.
- *
- * @param string $odd The text for the first and every further "odd" call.
- * @param string $even The text for the second and every further "even" call.
- * @param string $attributeName The html attribute name that should embrace $even/$odd output.
- * @return string
- */
 if (!function_exists('alternate')) {
-    function alternate($odd = '', $even = 'Alt', $attributeName = 'class') {
-        static $b = false;
-        if ($b = !$b) {
-            $value = $odd;
-        } else {
-            $value = $even;
+    function alternate($Odd = 'Alt', $Even = '', $AttributeName = 'class') {
+        static $i = 0;
+        $Value = $i++ % 2 ? $Odd : $Even;
+        if ($Value != '' && $Even == '' && $AttributeName) {
+            $Value = ' '.$AttributeName.'="'.$Value.'"';
         }
-
-        if ($value != '' && $attributeName != '') {
-            return ' '.$attributeName.'="'.$value.'"';
-        } else {
-            return $value;
-        }
+        return $Value;
     }
 }
 
@@ -46,48 +29,7 @@ if (!function_exists('bigPlural')) {
         }
         $Title = sprintf(T($Number == 1 ? $Singular : $Plural), number_format($Number));
 
-        return '<span title="'.$Title.'" class="Number">'.Gdn_Format::bigNumber($Number).'</span>';
-    }
-}
-
-/**
- * Outputs standardized HTML for a badge.
- * A badge generally designates a count, and displays with a contrasting background.
- *
- * @param string|int $badge Info to put into a badge, usually a number.
- * @return string Badge HTML string.
- */
-if (!function_exists('badge')) {
-    function badge($badge) {
-        return ' <span class="badge">'.$badge.'</span> ';
-    }
-}
-
-/**
- * Outputs standardized HTML for a popin badge.
- * A popin contains data that is injected after the page loads.
- * A badge generally designates a count, and displays with a contrasting background.
- *
- * @param string $rel Endpoint for a popin.
- * @return string Popin HTML string.
- */
-if (!function_exists('popin')) {
-    function popin($rel) {
-        return ' <span class="badge Popin js-popin" rel="'.$rel.'"></span> ';
-    }
-}
-
-/**
- * Outputs standardized HTML for an icon.
- * Uses the same css class naming conventions as font-vanillicon.
- *
- * @param string $icon Name of the icon you want to use, excluding the 'icon-' prefix.
- * @return string Icon HTML string.
- */
-if (!function_exists('icon')) {
-    function icon($icon) {
-        $icon = strtolower($icon);
-        return ' <span class="icon icon-'.$icon.'"></span> ';
+        return '<span title="'.$Title.'" class="Number">'.Gdn_Format::BigNumber($Number).'</span>';
     }
 }
 
@@ -149,11 +91,11 @@ if (!function_exists('buttonDropDown')) {
 
             echo '<ul class="Dropdown MenuItems">';
             foreach ($Links as $Link) {
-                echo wrap(Anchor($Link['Text'], $Link['Url'], val('CssClass', $Link, '')), 'li');
+                echo Wrap(Anchor($Link['Text'], $Link['Url'], GetValue('CssClass', $Link, '')), 'li');
             }
             echo '</ul>';
 
-            echo anchor($Label.' '.sprite('SpDropdownHandle'), '#', $ButtonClass.' Handle');
+            echo Anchor($Label.' '.Sprite('SpDropdownHandle'), '#', $ButtonClass.' Handle');
             echo '</div>';
         }
     }
@@ -205,23 +147,23 @@ if (!function_exists('buttonGroup')) {
         }
 
         if (count($Links) < 2) {
-            echo anchor($Text, $Url, $CssClass);
+            echo Anchor($Text, $Url, $CssClass);
         } else {
             // NavButton or Button?
-            $ButtonClass = concatSep(' ', $ButtonClass, strpos($CssClass, 'NavButton') !== false ? 'NavButton' : 'Button');
+            $ButtonClass = ConcatSep(' ', $ButtonClass, strpos($CssClass, 'NavButton') !== false ? 'NavButton' : 'Button');
             if (strpos($CssClass, 'Primary') !== false) {
                 $ButtonClass .= ' Primary';
             }
             // Strip "Button" or "NavButton" off the group class.
             echo '<div class="ButtonGroup Multi '.str_replace(array('NavButton', 'Button'), array('', ''), $CssClass).'">';
-            echo anchor($Text, $Url, $ButtonClass);
+            echo Anchor($Text, $Url, $ButtonClass);
 
             echo '<ul class="Dropdown MenuItems">';
             foreach ($Links as $Link) {
-                echo wrap(anchor($Link['Text'], $Link['Url'], val('CssClass', $Link, '')), 'li');
+                echo Wrap(Anchor($Link['Text'], $Link['Url'], GetValue('CssClass', $Link, '')), 'li');
             }
             echo '</ul>';
-            echo anchor(sprite('SpDropdownHandle', 'Sprite', t('Expand for more options.')), '#', $ButtonClass.' Handle');
+            echo Anchor(Sprite('SpDropdownHandle', 'Sprite', T('Expand for more options.')), '#', $ButtonClass.' Handle');
 
             echo '</div>';
         }
@@ -237,15 +179,15 @@ if (!function_exists('category')) {
      */
     function category($Depth = null, $Category = null) {
         if (!$Category) {
-            $Category = Gdn::controller()->data('Category');
+            $Category = Gdn::Controller()->Data('Category');
         } elseif (!is_array($Category)) {
-            $Category = CategoryModel::categories($Category);
+            $Category = CategoryModel::Categories($Category);
         }
 
         if (!$Category) {
-            $Category = Gdn::controller()->data('CategoryID');
+            $Category = Gdn::Controller()->Data('CategoryID');
             if ($Category) {
-                $Category = CategoryModel::categories($Category);
+                $Category = CategoryModel::Categories($Category);
             }
         }
         if (!$Category) {
@@ -257,7 +199,7 @@ if (!function_exists('category')) {
         if ($Depth !== null) {
             // Get the category at the correct level.
             while ($Category['Depth'] > $Depth) {
-                $Category = CategoryModel::categories($Category['ParentCategoryID']);
+                $Category = CategoryModel::Categories($Category['ParentCategoryID']);
                 if (!$Category) {
                     return null;
                 }
@@ -277,7 +219,7 @@ if (!function_exists('categoryUrl')) {
      */
     function categoryUrl($Category, $Page = '', $WithDomain = true) {
         if (is_string($Category)) {
-            $Category = CategoryModel::categories($Category);
+            $Category = CategoryModel::Categories($Category);
         }
         $Category = (array)$Category;
 
@@ -336,7 +278,7 @@ if (!function_exists('cssClass')) {
         static $Alt = false;
         $Row = (array)$Row;
         $CssClass = 'Item';
-        $Session = Gdn::session();
+        $Session = Gdn::Session();
 
         // Alt rows
         if ($Alt) {
@@ -346,7 +288,7 @@ if (!function_exists('cssClass')) {
 
         // Category list classes
         if (array_key_exists('UrlCode', $Row)) {
-            $CssClass .= ' Category-'.Gdn_Format::alphaNumeric($Row['UrlCode']);
+            $CssClass .= ' Category-'.Gdn_Format::AlphaNumeric($Row['UrlCode']);
         }
         if (GetValue('CssClass', $Row)) {
             $CssClass .= ' Item-'.$Row['CssClass'];
@@ -362,19 +304,19 @@ if (!function_exists('cssClass')) {
 
         // Discussion list classes.
         if ($InList) {
-            $CssClass .= val('Bookmarked', $Row) == '1' ? ' Bookmarked' : '';
+            $CssClass .= GetValue('Bookmarked', $Row) == '1' ? ' Bookmarked' : '';
 
-            $Announce = val('Announce', $Row);
+            $Announce = GetValue('Announce', $Row);
             if ($Announce == 2) {
                 $CssClass .= ' Announcement Announcement-Category';
             } elseif ($Announce) {
                 $CssClass .= ' Announcement Announcement-Everywhere';
             }
 
-            $CssClass .= val('Closed', $Row) == '1' ? ' Closed' : '';
-            $CssClass .= val('InsertUserID', $Row) == $Session->UserID ? ' Mine' : '';
-            $CssClass .= val('Participated', $Row) == '1' ? ' Participated' : '';
-            if (array_key_exists('CountUnreadComments', $Row) && $Session->isValid()) {
+            $CssClass .= GetValue('Closed', $Row) == '1' ? ' Closed' : '';
+            $CssClass .= GetValue('InsertUserID', $Row) == $Session->UserID ? ' Mine' : '';
+            $CssClass .= GetValue('Participated', $Row) == '1' ? ' Participated' : '';
+            if (array_key_exists('CountUnreadComments', $Row) && $Session->IsValid()) {
                 $CountUnreadComments = $Row['CountUnreadComments'];
                 if ($CountUnreadComments === true) {
                     $CssClass .= ' New';
@@ -383,7 +325,7 @@ if (!function_exists('cssClass')) {
                 } else {
                     $CssClass .= ' Unread';
                 }
-            } elseif (($IsRead = val('Read', $Row, null)) !== null) {
+            } elseif (($IsRead = GetValue('Read', $Row, null)) !== null) {
                 // Category list
                 $CssClass .= $IsRead ? ' Read' : ' Unread';
             }
@@ -397,17 +339,17 @@ if (!function_exists('cssClass')) {
         }
 
         if (function_exists('IsMeAction')) {
-            $CssClass .= isMeAction($Row) ? ' MeAction' : '';
+            $CssClass .= IsMeAction($Row) ? ' MeAction' : '';
         }
 
-        if ($_CssClss = val('_CssClass', $Row)) {
+        if ($_CssClss = GetValue('_CssClass', $Row)) {
             $CssClass .= ' '.$_CssClss;
         }
 
         // Insert User classes.
-        if ($UserID = val('InsertUserID', $Row)) {
-            $User = Gdn::userModel()->getID($UserID);
-            if ($_CssClss = val('_CssClass', $User)) {
+        if ($UserID = GetValue('InsertUserID', $Row)) {
+            $User = Gdn::UserModel()->GetID($UserID);
+            if ($_CssClss = GetValue('_CssClass', $User)) {
                 $CssClass .= ' '.$_CssClss;
             }
         }
@@ -419,19 +361,19 @@ if (!function_exists('cssClass')) {
 if (!function_exists('dateUpdated')) {
     function dateUpdated($Row, $Wrap = null) {
         $Result = '';
-        $DateUpdated = val('DateUpdated', $Row);
-        $UpdateUserID = val('UpdateUserID', $Row);
+        $DateUpdated = GetValue('DateUpdated', $Row);
+        $UpdateUserID = GetValue('UpdateUserID', $Row);
 
         if ($DateUpdated) {
-            $UpdateUser = Gdn::userModel()->getID($UpdateUserID);
+            $UpdateUser = Gdn::UserModel()->GetID($UpdateUserID);
             if ($UpdateUser) {
-                $Title = sprintf(T('Edited %s by %s.'), Gdn_Format::dateFull($DateUpdated), val('Name', $UpdateUser));
+                $Title = sprintf(T('Edited %s by %s.'), Gdn_Format::DateFull($DateUpdated), GetValue('Name', $UpdateUser));
             } else {
-                $Title = sprintf(T('Edited %s.'), Gdn_Format::dateFull($DateUpdated));
+                $Title = sprintf(T('Edited %s.'), Gdn_Format::DateFull($DateUpdated));
             }
 
             $Result = ' <span title="'.htmlspecialchars($Title).'" class="DateUpdated">'.
-                sprintf(T('edited %s'), Gdn_Format::date($DateUpdated)).
+                sprintf(T('edited %s'), Gdn_Format::Date($DateUpdated)).
                 '</span> ';
 
             if ($Wrap) {
@@ -477,7 +419,7 @@ if (!function_exists('anchor')) {
 
         $Prefix = substr($Destination, 0, 7);
         if (!in_array($Prefix, array('https:/', 'http://', 'mailto:')) && ($Destination != '' || $ForceAnchor === false)) {
-            $Destination = Gdn::request()->url($Destination, $WithDomain, $SSL);
+            $Destination = Gdn::Request()->Url($Destination, $WithDomain, $SSL);
         }
 
         return '<a href="'.htmlspecialchars($Destination, ENT_COMPAT, C('Garden.Charset', 'UTF-8')).'"'.Attribute($CssClass).Attribute($Attributes).'>'.$Text.'</a>';
@@ -494,7 +436,7 @@ if (!function_exists('commentUrl')) {
     function commentUrl($Comment, $WithDomain = true) {
         $Comment = (object)$Comment;
         $Result = "/discussion/comment/{$Comment->CommentID}#Comment_{$Comment->CommentID}";
-        return url($Result, $WithDomain);
+        return Url($Result, $WithDomain);
     }
 }
 
@@ -507,13 +449,13 @@ if (!function_exists('discussionUrl')) {
      */
     function discussionUrl($Discussion, $Page = '', $WithDomain = true) {
         $Discussion = (object)$Discussion;
-        $Name = Gdn_Format::url($Discussion->Name);
+        $Name = Gdn_Format::Url($Discussion->Name);
         if (empty($Name)) {
             $Name = 'x';
         }
         $Result = '/discussion/'.$Discussion->DiscussionID.'/'.$Name;
         if ($Page) {
-            if ($Page > 1 || Gdn::session()->UserID) {
+            if ($Page > 1 || Gdn::Session()->UserID) {
                 $Result .= '/p'.$Page;
             }
         }
@@ -530,7 +472,7 @@ if (!function_exists('fixnl2br')) {
      * @since 2.1
      */
     function fixnl2br($Text) {
-        $allblocks = '(?:table|dl|ul|ol|pre|blockquote|address|p|h[1-6]|section|article|aside|hgroup|header|footer|nav|figure|figcaption|details|menu|summary|li|tbody|tr|td|th|thead|tbody|tfoot|col|colgroup|caption|dt|dd)';
+        $allblocks = '(?:table|dl|ul|ol|pre|blockquote|address|p|h[1-6]|section|article|aside|hgroup|header|footer|nav|figure|figcaption|details|menu|summary)';
         $Text = preg_replace('!(?:<br\s*/>){1,2}\s*(<'.$allblocks.'[^>]*>)!', "\n$1", $Text);
         $Text = preg_replace('!(</'.$allblocks.'[^>]*>)\s*(?:<br\s*/>){1,2}!', "$1\n", $Text);
         return $Text;
@@ -559,11 +501,11 @@ if (!function_exists('formatPossessive')) {
 if (!function_exists('formatUsername')) {
     function formatUsername($User, $Format, $ViewingUserID = false) {
         if ($ViewingUserID === false) {
-            $ViewingUserID = Gdn::session()->UserID;
+            $ViewingUserID = Gdn::Session()->UserID;
         }
-        $UserID = val('UserID', $User);
-        $Name = val('Name', $User);
-        $Gender = strtolower(val('Gender', $User));
+        $UserID = GetValue('UserID', $User);
+        $Name = GetValue('Name', $User);
+        $Gender = strtolower(GetValue('Gender', $User));
 
         $UCFirst = substr($Format, 0, 1) == strtoupper(substr($Format, 0, 1));
 
@@ -571,14 +513,14 @@ if (!function_exists('formatUsername')) {
         switch (strtolower($Format)) {
             case 'you':
                 if ($ViewingUserID == $UserID) {
-                    return t("Format $Format", $Format);
+                    return T("Format $Format", $Format);
                 }
                 return $Name;
             case 'his':
             case 'her':
             case 'your':
                 if ($ViewingUserID == $UserID) {
-                    return t("Format Your", 'Your');
+                    return T("Format Your", 'Your');
                 } else {
                     switch ($Gender) {
                         case 'm':
@@ -594,7 +536,7 @@ if (!function_exists('formatUsername')) {
                     if ($UCFirst) {
                         $Format = ucfirst($Format);
                     }
-                    return t("Format $Format", $Format);
+                    return T("Format $Format", $Format);
                 }
                 break;
             default:
@@ -614,11 +556,11 @@ if (!function_exists('hasEditProfile')) {
         if (checkPermission(array('Garden.Users.Edit', 'Moderation.Profiles.Edit'))) {
             return true;
         }
-        if ($userID != Gdn::session()->UserID) {
+        if ($userID != Gdn::Session()->UserID) {
             return false;
         }
 
-        $result = checkPermission('Garden.Profiles.Edit') && c('Garden.UserAccount.AllowEdit');
+        $result = checkPermission('Garden.Profiles.Edit') && C('Garden.UserAccount.AllowEdit');
 
         $result &= (
             C('Garden.Profile.Titles') ||
@@ -632,26 +574,21 @@ if (!function_exists('hasEditProfile')) {
 
 if (!function_exists('hoverHelp')) {
     function hoverHelp($String, $Help) {
-        return wrap($String.wrap($Help, 'span', array('class' => 'Help')), 'span', array('class' => 'HoverHelp'));
+        return Wrap($String.Wrap($Help, 'span', array('class' => 'Help')), 'span', array('class' => 'HoverHelp'));
     }
 }
 
 if (!function_exists('img')) {
     /**
      * Returns an img tag.
-     *
-     * @param $Image
-     * @param string $Attributes
-     * @param bool|false $WithDomain
-     * @return string
      */
     function img($Image, $Attributes = '', $WithDomain = false) {
         if ($Attributes != '') {
-            $Attributes = attribute($Attributes);
+            $Attributes = Attribute($Attributes);
         }
 
         if (!IsUrl($Image)) {
-            $Image = smartAsset($Image, $WithDomain);
+            $Image = SmartAsset($Image, $WithDomain);
         }
 
         return '<img src="'.htmlspecialchars($Image, ENT_QUOTES).'"'.$Attributes.' />';
@@ -667,7 +604,7 @@ if (!function_exists('inCategory')) {
      * @since 2.1
      */
     function inCategory($Category) {
-        $Breadcrumbs = (array)Gdn::controller()->data('Breadcrumbs', array());
+        $Breadcrumbs = (array)Gdn::Controller()->Data('Breadcrumbs', array());
 
         foreach ($Breadcrumbs as $Breadcrumb) {
             if (isset($Breadcrumb['CategoryID']) && strcasecmp($Breadcrumb['UrlCode'], $Category) == 0) {
@@ -688,7 +625,7 @@ if (!function_exists('inSection')) {
      * @since 2.1
      */
     function inSection($Section) {
-        return Gdn_Theme::inSection($Section);
+        return Gdn_Theme::InSection($Section);
     }
 }
 
@@ -698,7 +635,7 @@ if (!function_exists('ipAnchor')) {
      */
     function ipAnchor($IP, $CssClass = '') {
         if ($IP) {
-            return anchor(htmlspecialchars($IP), '/user/browse?keywords='.urlencode($IP), $CssClass);
+            return Anchor(htmlspecialchars($IP), '/user/browse?keywords='.urlencode($IP), $CssClass);
         } else {
             return $IP;
         }
@@ -736,7 +673,7 @@ if (!function_exists('plural')) {
             $FormattedNumber = $Number;
         }
 
-        $Format = t(abs($WorkingNumber) == 1 ? $Singular : $Plural);
+        $Format = T(abs($WorkingNumber) == 1 ? $Singular : $Plural);
 
         return sprintf($Format, $FormattedNumber);
     }
@@ -756,9 +693,9 @@ if (!function_exists('pluralTranslate')) {
      */
     function pluralTranslate($Number, $Singular, $Plural, $SingularDefault = false, $PluralDefault = false) {
         if ($Number == 1) {
-            return t($Singular, $SingularDefault);
+            return T($Singular, $SingularDefault);
         } else {
-            return t($Plural, $PluralDefault);
+            return T($Plural, $PluralDefault);
         }
     }
 }
@@ -791,7 +728,7 @@ if (!function_exists('searchExcerpt')) {
                     $Line = substrWord($Line, $Term, $Length);
 
                     if ($Mark) {
-                        return markString($SearchTerms, $Line);
+                        return MarkString($SearchTerms, $Line);
                     } else {
                         return $Line;
                     }
@@ -802,7 +739,7 @@ if (!function_exists('searchExcerpt')) {
         // No line was found so return the first non-blank line.
         foreach ($Lines as $Line) {
             if ($Line) {
-                return sliceString($Line, $Length);
+                return SliceString($Line, $Length);
             }
         }
         return '';
@@ -860,7 +797,7 @@ if (!function_exists('userAnchor')) {
     function userAnchor($User, $CssClass = null, $Options = null) {
         static $NameUnique = null;
         if ($NameUnique === null) {
-            $NameUnique = c('Garden.Registration.NameUnique');
+            $NameUnique = C('Garden.Registration.NameUnique');
         }
 
         if (is_array($CssClass)) {
@@ -870,21 +807,21 @@ if (!function_exists('userAnchor')) {
             $Options = array('Px' => $Options);
         }
 
-        $Px = val('Px', $Options, '');
+        $Px = GetValue('Px', $Options, '');
 
-        $Name = val($Px.'Name', $User, t('Unknown'));
+        $Name = GetValue($Px.'Name', $User, T('Unknown'));
 //        $UserID = GetValue($Px.'UserID', $User, 0);
-        $Text = val('Text', $Options, htmlspecialchars($Name)); // Allow anchor text to be overridden.
+        $Text = GetValue('Text', $Options, htmlspecialchars($Name)); // Allow anchor text to be overridden.
 
         $Attributes = array(
             'class' => $CssClass,
-            'rel' => val('Rel', $Options)
+            'rel' => GetValue('Rel', $Options)
         );
         if (isset($Options['title'])) {
             $Attributes['title'] = $Options['title'];
         }
-        $UserUrl = userUrl($User, $Px);
-        return '<a href="'.htmlspecialchars(url($UserUrl)).'"'.attribute($Attributes).'>'.$Text.'</a>';
+        $UserUrl = UserUrl($User, $Px);
+        return '<a href="'.htmlspecialchars(Url($UserUrl)).'"'.Attribute($Attributes).'>'.$Text.'</a>';
     }
 }
 
@@ -904,7 +841,7 @@ if (!function_exists('userBuilder')) {
         $User->UserID = $Object->$UserID;
         $User->Name = $Object->$Name;
         $User->Photo = property_exists($Object, $Photo) ? $Object->$Photo : '';
-        $User->Email = val($UserPrefix.'Email', $Object, null);
+        $User->Email = GetValue($UserPrefix.'Email', $Object, null);
         $User->Gender = property_exists($Object, $Gender) ? $Object->$Gender : null;
         return $User;
     }
@@ -922,16 +859,16 @@ if (!function_exists('userPhoto')) {
             $Options = array('LinkClass' => $Options);
         }
 
-        if ($Px = val('Px', $Options)) {
-            $User = userBuilder($User, $Px);
+        if ($Px = GetValue('Px', $Options)) {
+            $User = UserBuilder($User, $Px);
         } else {
             $User = (object)$User;
         }
 
-        $LinkClass = concatSep(' ', val('LinkClass', $Options, ''), 'PhotoWrap');
-        $ImgClass = val('ImageClass', $Options, 'ProfilePhoto');
+        $LinkClass = ConcatSep(' ', GetValue('LinkClass', $Options, ''), 'PhotoWrap');
+        $ImgClass = GetValue('ImageClass', $Options, 'ProfilePhoto');
 
-        $Size = val('Size', $Options);
+        $Size = GetValue('Size', $Options);
         if ($Size) {
             $LinkClass .= " PhotoWrap{$Size}";
             $ImgClass .= " {$ImgClass}{$Size}";
@@ -939,37 +876,40 @@ if (!function_exists('userPhoto')) {
             $ImgClass .= " {$ImgClass}Medium"; // backwards compat
         }
 
-        $FullUser = Gdn::userModel()->getID(val('UserID', $User), DATASET_TYPE_ARRAY);
-        $UserCssClass = val('_CssClass', $FullUser);
+        $FullUser = Gdn::UserModel()->GetID(GetValue('UserID', $User), DATASET_TYPE_ARRAY);
+        $UserCssClass = GetValue('_CssClass', $FullUser);
         if ($UserCssClass) {
             $LinkClass .= ' '.$UserCssClass;
         }
 
         $LinkClass = $LinkClass == '' ? '' : ' class="'.$LinkClass.'"';
 
-        $Photo = val('Photo', $User, val('PhotoUrl', $User));
-        $Name = val('Name', $User);
-        $Title = htmlspecialchars(val('Title', $Options, $Name));
-        $Href = url(userUrl($User));
+        $Photo = GetValue('Photo', $User);
+        $Name = GetValue('Name', $User);
+        $Title = htmlspecialchars(GetValue('Title', $Options, $Name));
 
         if ($FullUser && $FullUser['Banned']) {
-            $Photo = c('Garden.BannedPhoto', 'https://c3409409.ssl.cf0.rackcdn.com/images/banned_large.png');
-            $Title .= ' ('.t('Banned').')';
+            $Photo = C('Garden.BannedPhoto', 'http://cdn.vanillaforums.com/images/banned_large.png');
+            $Title .= ' ('.T('Banned').')';
+        }
+
+        if (!$Photo && function_exists('UserPhotoDefaultUrl')) {
+            $Photo = UserPhotoDefaultUrl($User, $ImgClass);
         }
 
         if ($Photo) {
             if (!isUrl($Photo)) {
-                $PhotoUrl = Gdn_Upload::url(changeBasename($Photo, 'n%s'));
+                $PhotoUrl = Gdn_Upload::Url(ChangeBasename($Photo, 'n%s'));
             } else {
                 $PhotoUrl = $Photo;
             }
+            $Href = Url(UserUrl($User));
+            return '<a title="'.$Title.'" href="'.$Href.'"'.$LinkClass.'>'
+            .Img($PhotoUrl, array('alt' => $Name, 'class' => $ImgClass))
+            .'</a>';
         } else {
-            $PhotoUrl = UserModel::getDefaultAvatarUrl($User, 'thumbnail');
+            return '';
         }
-
-        return '<a title="'.$Title.'" href="'.$Href.'"'.$LinkClass.'>'
-        .img($PhotoUrl, array('alt' => $Name, 'class' => $ImgClass))
-        .'</a>';
     }
 }
 
@@ -980,21 +920,25 @@ if (!function_exists('userPhotoUrl')) {
      * @param object|array $User
      */
     function userPhotoUrl($User) {
-        $FullUser = Gdn::userModel()->getID(val('UserID', $User), DATASET_TYPE_ARRAY);
-        $Photo = val('Photo', $User);
+        $FullUser = Gdn::UserModel()->GetID(GetValue('UserID', $User), DATASET_TYPE_ARRAY);
+        $Photo = GetValue('Photo', $User);
         if ($FullUser && $FullUser['Banned']) {
-            $Photo = 'https://c3409409.ssl.cf0.rackcdn.com/images/banned_100.png';
+            $Photo = 'http://cdn.vanillaforums.com/images/banned_100.png';
+        }
+
+        if (!$Photo && function_exists('UserPhotoDefaultUrl')) {
+            $Photo = UserPhotoDefaultUrl($User);
         }
 
         if ($Photo) {
             if (!isUrl($Photo)) {
-                $PhotoUrl = Gdn_Upload::url(changeBasename($Photo, 'n%s'));
+                $PhotoUrl = Gdn_Upload::Url(ChangeBasename($Photo, 'n%s'));
             } else {
                 $PhotoUrl = $Photo;
             }
             return $PhotoUrl;
         }
-        return UserModel::getDefaultAvatarUrl($User);
+        return '';
     }
 }
 
@@ -1012,15 +956,15 @@ if (!function_exists('userUrl')) {
     function userUrl($User, $Px = '', $Method = '', $Get = null) {
         static $NameUnique = null;
         if ($NameUnique === null) {
-            $NameUnique = c('Garden.Registration.NameUnique');
+            $NameUnique = C('Garden.Registration.NameUnique');
         }
 
-        $UserName = val($Px.'Name', $User);
+        $UserName = GetValue($Px.'Name', $User);
         $UserName = preg_replace('/([\?&]+)/', '', $UserName);
 
         $Result = '/profile/'.
             ($Method ? trim($Method, '/').'/' : '').
-            ($NameUnique ? '' : val($Px.'UserID', $User, 0).'/').
+            ($NameUnique ? '' : GetValue($Px.'UserID', $User, 0).'/').
             rawurlencode($UserName);
 
         if (!empty($Get)) {
@@ -1067,7 +1011,7 @@ if (!function_exists('wrapIf')) {
         if (empty($String)) {
             return '';
         } else {
-            return wrap($String, $Tag, $Attributes);
+            return Wrap($String, $Tag, $Attributes);
         }
     }
 }
@@ -1077,17 +1021,17 @@ if (!function_exists('wrapIf')) {
  */
 if (!function_exists('discussionLink')) {
     function discussionLink($Discussion, $Extended = true) {
-        $DiscussionID = val('DiscussionID', $Discussion);
-        $DiscussionName = val('Name', $Discussion);
+        $DiscussionID = GetValue('DiscussionID', $Discussion);
+        $DiscussionName = GetValue('Name', $Discussion);
         $Parts = array(
             'discussion',
             $DiscussionID,
-            Gdn_Format::url($DiscussionName)
+            Gdn_Format::Url($DiscussionName)
         );
         if ($Extended) {
             $Parts[] = ($Discussion->CountCommentWatch > 0) ? '#Item_'.$Discussion->CountCommentWatch : '';
         }
-        return url(implode('/', $Parts), true);
+        return Url(implode('/', $Parts), true);
     }
 }
 
@@ -1101,7 +1045,7 @@ if (!function_exists('registerUrl')) {
 
         // Check to see if there is even a sign in button.
         if (!$force && $registrationMethod === 'connect') {
-            $defaultProvider = Gdn_AuthenticationProviderModel::getDefault();
+            $defaultProvider = Gdn_AuthenticationProviderModel::GetDefault();
             if ($defaultProvider && !val('RegisterUrl', $defaultProvider)) {
                 return '';
             }
@@ -1115,7 +1059,7 @@ if (!function_exists('signInUrl')) {
     function signInUrl($target = '', $force = false) {
         // Check to see if there is even a sign in button.
         if (!$force && strcasecmp(C('Garden.Registration.Method'), 'Connect') !== 0) {
-            $defaultProvider = Gdn_AuthenticationProviderModel::getDefault();
+            $defaultProvider = Gdn_AuthenticationProviderModel::GetDefault();
             if ($defaultProvider && !val('SignInUrl', $defaultProvider)) {
                 return '';
             }
@@ -1137,7 +1081,7 @@ if (!function_exists('signOutUrl')) {
             }
         }
 
-        return '/entry/signout?TransientKey='.urlencode(Gdn::session()->transientKey()).($Target ? '&Target='.urlencode($Target) : '');
+        return '/entry/signout?TransientKey='.urlencode(Gdn::Session()->TransientKey()).($Target ? '&Target='.urlencode($Target) : '');
     }
 }
 
@@ -1146,7 +1090,6 @@ if (!function_exists('socialSignInButton')) {
         TouchValue('title', $Attributes, sprintf(T('Sign In with %s'), $Name));
         $Title = $Attributes['title'];
         $Class = val('class', $Attributes, '');
-        unset($Attributes['class']);
 
         switch ($Type) {
             case 'icon':
@@ -1191,7 +1134,7 @@ if (!function_exists('writeReactions')) {
             SetValue('Attributes', $Row, $Attributes);
         }
 
-        Gdn::controller()->EventArguments['ReactionTypes'] = array();
+        Gdn::Controller()->EventArguments['ReactionTypes'] = array();
 
         if ($ID = GetValue('CommentID', $Row)) {
             $RecordType = 'comment';
@@ -1201,47 +1144,47 @@ if (!function_exists('writeReactions')) {
             $RecordType = 'discussion';
             $ID = GetValue('DiscussionID', $Row);
         }
-        Gdn::controller()->EventArguments['RecordType'] = $RecordType;
-        Gdn::controller()->EventArguments['RecordID'] = $ID;
+        Gdn::Controller()->EventArguments['RecordType'] = $RecordType;
+        Gdn::Controller()->EventArguments['RecordID'] = $ID;
 
         echo '<div class="Reactions">';
-        Gdn_Theme::bulletRow();
+        Gdn_Theme::BulletRow();
 
         // Write the flags.
         static $Flags = null;
         if ($Flags === null) {
-            Gdn::controller()->EventArguments['Flags'] = &$Flags;
-            Gdn::controller()->fireEvent('Flags');
+            Gdn::Controller()->EventArguments['Flags'] = &$Flags;
+            Gdn::Controller()->FireEvent('Flags');
         }
 
         // Allow addons to work with flags
-        Gdn::controller()->EventArguments['Flags'] = &$Flags;
-        Gdn::controller()->fireEvent('BeforeFlag');
+        Gdn::Controller()->EventArguments['Flags'] = &$Flags;
+        Gdn::Controller()->FireEvent('BeforeFlag');
 
         if (!empty($Flags) && is_array($Flags)) {
-            echo Gdn_Theme::bulletItem('Flags');
+            echo Gdn_Theme::BulletItem('Flags');
 
             echo ' <span class="FlagMenu ToggleFlyout">';
             // Write the handle.
-            echo anchor(sprite('ReactFlag', 'ReactSprite').' '.wrap(t('Flag'), 'span', array('class' => 'ReactLabel')), '', 'Hijack ReactButton-Flag FlyoutButton', array('title' => t('Flag')), true);
-            echo sprite('SpFlyoutHandle', 'Arrow');
+            echo Anchor(Sprite('ReactFlag', 'ReactSprite').' '.Wrap(T('Flag'), 'span', array('class' => 'ReactLabel')), '', 'Hijack ReactButton-Flag FlyoutButton', array('title' => 'Flag'), true);
+            echo Sprite('SpFlyoutHandle', 'Arrow');
             echo '<ul class="Flyout MenuItems Flags" style="display: none;">';
             foreach ($Flags as $Flag) {
                 if (is_callable($Flag)) {
                     echo '<li>'.call_user_func($Flag, $Row, $RecordType, $ID).'</li>';
                 } else {
-                    echo '<li>'.reactionButton($Row, $Flag['UrlCode']).'</li>';
+                    echo '<li>'.ReactionButton($Row, $Flag['UrlCode']).'</li>';
                 }
             }
-            Gdn::controller()->fireEvent('AfterFlagOptions');
+            Gdn::Controller()->FireEvent('AfterFlagOptions');
             echo '</ul>';
             echo '</span> ';
         }
 
-        Gdn::controller()->fireEvent('AfterFlag');
+        Gdn::Controller()->FireEvent('AfterFlag');
 
-        Gdn::controller()->fireEvent('AfterReactions');
+        Gdn::Controller()->FireEvent('AfterReactions');
         echo '</div>';
-        Gdn::controller()->fireEvent('Replies');
+        Gdn::Controller()->FireEvent('Replies');
     }
 }

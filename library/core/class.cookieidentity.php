@@ -103,7 +103,7 @@ class Gdn_CookieIdentity {
             return 0;
         }
 
-        list($UserID) = self::getCookiePayload($this->CookieName);
+        list($UserID, $Expiration) = $this->getCookiePayload($this->CookieName);
 
         if (!is_numeric($UserID) || $UserID < -2) { // allow for handshake special id
             return 0;
@@ -138,7 +138,7 @@ class Gdn_CookieIdentity {
             return false;
         }
 
-        list($UserID) = self::getCookiePayload($this->CookieName);
+        list($UserID, $Expiration) = $this->getCookiePayload($this->CookieName);
 
         if ($UserID != $CheckUserID) {
             return false;
@@ -321,7 +321,7 @@ class Gdn_CookieIdentity {
     }
 
     /**
-     * Validate security of our cookie.
+     *
      *
      * @param $CookieName
      * @param null $CookieHashMethod
@@ -347,16 +347,15 @@ class Gdn_CookieIdentity {
             return false;
         }
 
-        list($HashKey, $CookieHash) = $CookieData;
-        list($UserID, $Expiration) = self::getCookiePayload($CookieName);
-        if ($Expiration < time()) {
+        list($HashKey, $CookieHash, $Time, $UserID, $PayloadExpires) = $CookieData;
+        if ($PayloadExpires < time() && $PayloadExpires != 0) {
             self::deleteCookie($CookieName);
             return false;
         }
         $KeyHash = self::_hash($HashKey, $CookieHashMethod, $CookieSalt);
         $CheckHash = self::_hashHMAC($CookieHashMethod, $HashKey, $KeyHash);
 
-        if (!compareHashDigest($CookieHash, $CheckHash)) {
+        if (!CompareHashDigest($CookieHash, $CheckHash)) {
             self::deleteCookie($CookieName);
             return false;
         }
@@ -365,24 +364,32 @@ class Gdn_CookieIdentity {
     }
 
     /**
-     * Get the pieces that make up our cookie data.
      *
-     * @param string $CookieName
-     * @return array
+     *
+     * @param $CookieName
+     * @param null $CookieHashMethod
+     * @param null $CookieSalt
+     * @return array|bool
      */
-    public static function getCookiePayload($CookieName) {
+    public static function getCookiePayload($CookieName, $CookieHashMethod = null, $CookieSalt = null) {
+        if (!self::checkCookie($CookieName)) {
+            return false;
+        }
+
         $Payload = explode('|', $_COOKIE[$CookieName]);
+
         $Key = explode('-', $Payload[0]);
         $Expiration = array_pop($Key);
         $UserID = implode('-', $Key);
         $Payload = array_slice($Payload, 4);
+
         $Payload = array_merge(array($UserID, $Expiration), $Payload);
 
         return $Payload;
     }
 
     /**
-     * Remove a cookie.
+     *
      *
      * @param $CookieName
      */
@@ -392,7 +399,7 @@ class Gdn_CookieIdentity {
     }
 
     /**
-     * Remove a cookie.
+     *
      *
      * @param $CookieName
      * @param null $Path

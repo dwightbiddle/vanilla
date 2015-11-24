@@ -17,14 +17,14 @@ echo $this->Form->errors();
             echo $this->Form->label('Value or Pattern', 'BanValue');
             echo $this->Form->textBox('BanValue');
             ?>
-            <span><?php echo t('Use asterisks for wildcards', 'Use asterisks for wildcards, e.g. &lsquo;*@hotmail.com&rsquo;'); ?></span>
+            <span>Use asterisks for wildcards, e.g. &lsquo;*@hotmail.com&rsquo;</span>
         </li>
         <li>
             <?php
             echo $this->Form->label('Notes', 'Notes');
             echo $this->Form->textBox('Notes');
             ?>
-            <span><?php echo t('Optional'); ?></span>
+            <span>Optional</span>
         </li>
         <?php $this->fireEvent("AfterAddBanForm"); ?>
     </ul>

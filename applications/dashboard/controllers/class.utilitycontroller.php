@@ -34,6 +34,17 @@ class UtilityController extends DashboardController {
     );
 
     /**
+     * Gather all of the global styles together.
+     * @param string ThemeType Either `desktop` or `mobile`.
+     * @param string $Filename The basename of the file to
+     * @since 2.1
+     */
+    public function css($ThemeType, $Filename) {
+        $AssetModel = new AssetModel();
+        $AssetModel->ServeCss($ThemeType, $Filename);
+    }
+
+    /**
      * Runs before every call to this controller.
      */
     public function initialize() {
@@ -41,6 +52,136 @@ class UtilityController extends DashboardController {
         Gdn_Theme::section('Dashboard');
         set_time_limit(0); // Is this even doing anything?
     }
+
+//   /**
+//    * Call a method on the given model.
+//    */
+//   public function model() {
+//      $this->permission('Garden.Settings.Manage');
+//
+//      $this->deliveryMethod(DELIVERY_METHOD_JSON);
+//      $this->deliveryType(DELIVERY_TYPE_DATA);
+//
+//      $Args = func_get_args();
+//
+//      // Check to see if we have a model.
+//      $ModelName = StringEndsWith(array_shift($Args), 'Model', TRUE, true);
+//      $ModelName = ucfirst($ModelName).'Model';
+//      if (!class_exists($ModelName)) {
+//         throw notFoundException($ModelName);
+//      }
+//
+//      // Check for json/xml style extension.
+//      if (count($Args)) {
+//         $LastArg = $Args[count($Args) - 1];
+//         $Extension = strrchr($LastArg, '.');
+//         if ($Extension) {
+//            $Args[count($Args) - 1] = substr($LastArg, 0, -strlen($Extension));
+//            $Extension = strtolower($Extension);
+//            if ($Extension == '.xml')
+//               $this->deliveryMethod(DELIVERY_METHOD_XML);
+//         }
+//      }
+//
+//      // Instantiate the model.
+//      $Model = new $ModelName();
+//      $MethodName = array_shift($Args);
+//
+//      // Reflect the arguments.
+//      $Callback = array($Model, $MethodName);
+//
+//      if ($this->Request->get('help')) {
+//         $this->setData('Model', get_class($Model));
+//         if ($MethodName) {
+//            if (!method_exists($Model, $MethodName)) {
+//               throw notFoundException($ModelName.'->'.$MethodName.'()');
+//            }
+//            $this->setData('Method', $MethodName);
+//            $Meth = new ReflectionMethod($Callback[0], $Callback[1]);
+//            $MethArgs = $Meth->getParameters();
+//            $Args = array();
+//            foreach ($MethArgs as $Index => $MethArg) {
+//               $ParamName = $MethArg->getName();
+//
+//               if ($MethArg->isDefaultValueAvailable())
+//                  $Args[$ParamName] = $MethArg->getDefaultValue();
+//               else
+//                  $Args[$ParamName] = 'REQUIRED';
+//            }
+//            $this->setData('Args', $Args);
+//         } else {
+//            $Class = new ReflectionClass($Model);
+//            $Meths = $Class->getMethods();
+//            $Methods = array();
+//            foreach ($Meths as $Meth) {
+//               $MethodName = $Meth->getName();
+//               if (stringBeginsWith($MethodName, '_'))
+//                  continue;
+//
+//               $MethArgs = $Meth->getParameters();
+//               $Args = array();
+//               foreach ($MethArgs as $Index => $MethArg) {
+//                  $ParamName = $MethArg->getName();
+//
+//                  if ($MethArg->isDefaultValueAvailable())
+//                     $Args[$ParamName] = $MethArg->getDefaultValue();
+//                  else
+//                     $Args[$ParamName] = 'REQUIRED';
+//               }
+//               $Methods[$MethodName] = array('Method' => $MethodName, 'Args' => $Args);
+//            }
+//            $this->setData('Methods', $Methods);
+//         }
+//      } else {
+//         if (!method_exists($Model, $MethodName)) {
+//            throw notFoundException($ModelName.'->'.$MethodName.'()');
+//         }
+//
+//         $MethodArgs = ReflectArgs($Callback, $this->Request->get(), $Args);
+//
+//         $Result = call_user_func_array($Callback, $MethodArgs);
+//
+//         if (is_array($Result))
+//            $this->Data = $Result;
+//         elseif (is_a($Result, 'Gdn_DataSet')) {
+//            $Result = $Result->resultArray();
+//            $this->Data = $Result;
+//         } elseif (is_a($Result, 'stdClass'))
+//            $this->Data = (array)$Result;
+//         else
+//            $this->setData('Result', $Result);
+//      }
+//
+//      $this->render();
+//   }
+
+    /**
+     * Redirect to another page.
+     * @since 2.0.18b4
+     */
+//   public function redirect() {
+//      $Args = func_get_args();
+//      $Path = $this->Request->Path();
+//      if (count($Args) > 0) {
+//         if (in_array($Args[0], array('http', 'https'))) {
+//            $Protocal = array_shift($Args);
+//         } else {
+//            $Protocal = 'http';
+//         }
+//         $Url = $Protocal.'://'.implode($Args, '/');
+//      } else {
+//         $Url = url('/', true);
+//      }
+//
+//      $Get = $this->Request->get();
+//      if (count($Get) > 0) {
+//         $Query = '?'.http_build_query($Get);
+//      } else {
+//         $Query = '';
+//      }
+//
+//      redirect($Url.$Query);
+//   }
 
     /**
      * Set the sort order for data on an arbitrary database table.
@@ -155,14 +296,7 @@ class UtilityController extends DashboardController {
             // The form requires a postback to do anything.
             $step = 'start';
         } else {
-            $scan = $this->Form->getFormValue('Scan');
-            $run = $this->Form->getFormValue('Run');
-            $step = 'start';
-            if (!empty($scan)) {
-                $step = 'scan';
-            } else if (!empty($run)) {
-                $step = 'run';
-            }
+            $step = !empty($this->Form->getFormValue('Scan')) ? 'scan' : (!empty($this->Form->getFormValue('Run')) ? 'run' : 'start');
         }
 
         switch ($step) {
@@ -259,48 +393,33 @@ class UtilityController extends DashboardController {
     /**
      * Run a structure update on the database.
      *
-     * It should always be possible to call this method, even if no database tables exist yet.
-     * A working forum database should be built from scratch where none exists. Therefore,
-     * it can have no reliance on existing data calls, or they must be able to fail gracefully.
-     *
      * @since 2.0.?
      * @access public
      */
     public function update() {
-        // Check for permission or flood control.
-        // These settings are loaded/saved to the database because we don't want the config file storing non/config information.
-        $Now = time();
-        $LastTime = 0;
-        $Count = 0;
-
         try {
+            // Check for permission or flood control.
+            // These settings are loaded/saved to the database because we don't want the config file storing non/config information.
+            $Now = time();
             $LastTime = Gdn::get('Garden.Update.LastTimestamp', 0);
-        } catch (Exception $Ex) {
-            // We don't have a GDN_UserMeta table yet. Sit quietly and one will appear.
-        }
 
-        if ($LastTime + (60 * 60 * 24) > $Now) {
-            // Check for flood control.
-            try {
+            if ($LastTime + (60 * 60 * 24) > $Now) {
+                // Check for flood control.
                 $Count = Gdn::get('Garden.Update.Count', 0) + 1;
-            } catch (Exception $Ex) {
-                // Once more we sit, watching the breath.
-            }
-            if ($Count > 5) {
-                if (!Gdn::session()->checkPermission('Garden.Settings.Manage')) {
-                    // We are only allowing an update of 5 times every 24 hours.
-                    throw permissionException();
+                if ($Count > 5) {
+                    if (!Gdn::session()->checkPermission('Garden.Settings.Manage')) {
+                        // We are only allowing an update of 5 times every 24 hours.
+                        throw permissionException();
+                    }
                 }
+            } else {
+                $Count = 1;
             }
-        } else {
-            $Count = 1;
-        }
-
-        try {
             Gdn::set('Garden.Update.LastTimestamp', $Now);
             Gdn::set('Garden.Update.Count', $Count);
+        } catch (PermissionException $Ex) {
+            return;
         } catch (Exception $Ex) {
-            // What is a GDN_UserMeta table, really? Suffering.
         }
 
         try {
@@ -310,7 +429,6 @@ class UtilityController extends DashboardController {
             $this->setData('Success', true);
         } catch (Exception $Ex) {
             $this->setData('Success', false);
-            $this->setData('Error', $Ex->getMessage());
             if (Debug()) {
                 throw $Ex;
             }
@@ -476,29 +594,8 @@ class UtilityController extends DashboardController {
      * @param int $Length Number of items to get.
      * @param string $FeedFormat How we want it (valid formats are 'normal' or 'sexy'. OK, not really).
      */
-    public function getFeed($type = 'news', $length = 5, $feedFormat = 'normal') {
-        $validTypes = array(
-            'releases',
-            'help',
-            'news',
-            'cloud'
-        );
-        $validFormats = array(
-            'extended',
-            'normal'
-        );
-
-        $length = is_numeric($length) && $length <= 50 ? $length : 5;
-
-        if (!in_array($type, $validTypes)) {
-            $type = 'news';
-        }
-
-        if (!in_array($feedFormat, $validFormats)) {
-            $feedFormat = 'normal';
-        }
-
-        echo file_get_contents("http://vanillaforums.org/vforg/home/getfeed/{$type}/{$length}/{$feedFormat}/?DeliveryType=VIEW");
+    public function getFeed($Type = 'news', $Length = 5, $FeedFormat = 'normal') {
+        echo file_get_contents('http://vanillaforums.org/vforg/home/getfeed/'.$Type.'/'.$Length.'/'.$FeedFormat.'/?DeliveryType=VIEW');
         $this->deliveryType(DELIVERY_TYPE_NONE);
         $this->render();
     }
@@ -508,11 +605,6 @@ class UtilityController extends DashboardController {
      */
     public function fetchPageInfo($Url = '') {
         $PageInfo = fetchPageInfo($Url);
-
-        if (!empty($PageInfo['Exception'])) {
-            throw new Gdn_UserException($PageInfo['Exception'], 400);
-        }
-
         $this->setData('PageInfo', $PageInfo);
         $this->MasterView = 'default';
         $this->removeCssFile('admin.css');

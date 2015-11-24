@@ -36,7 +36,7 @@ function Auth_OpenID_getOpenIDTypeURIs()
  * Object representing an OpenID service endpoint.
  */
 class Auth_OpenID_ServiceEndpoint {
-    function __construct()
+    function Auth_OpenID_ServiceEndpoint()
     {
         $this->claimed_id = null;
         $this->server_url = null;

@@ -100,7 +100,7 @@ class Gdn_DatabaseDebug extends Gdn_Database {
         foreach ($Trace as $Info) {
             $Class = val('class', $Info, '');
             if ($Class === '' || stringEndsWith($Class, 'Model', true) || stringEndsWith($Class, 'Plugin', true)) {
-                $Type = val('type', $Info, '');
+                $Type = arrayValue('type', $Info, '');
 
                 $Method = $Class.$Type.$Info['function'].'('.self::formatArgs($Info['args']).')';
                 break;

@@ -65,10 +65,6 @@ class Gdn_Email extends Gdn_Pluggable {
      * @return Email
      */
     public function bcc($RecipientEmail, $RecipientName = '') {
-        if ($RecipientName != '' && c('Garden.Email.OmitToName', false)) {
-            $RecipientName = '';
-        }
-
         ob_start();
         $this->PhpMailer->addBCC($RecipientEmail, $RecipientName);
         ob_end_clean();
@@ -84,10 +80,6 @@ class Gdn_Email extends Gdn_Pluggable {
      * @return Email
      */
     public function cc($RecipientEmail, $RecipientName = '') {
-        if ($RecipientName != '' && c('Garden.Email.OmitToName', false)) {
-            $RecipientName = '';
-        }
-
         ob_start();
         $this->PhpMailer->addCC($RecipientEmail, $RecipientName);
         ob_end_clean();
@@ -293,10 +285,6 @@ class Gdn_Email extends Gdn_Pluggable {
 
 
     public function addTo($RecipientEmail, $RecipientName = '') {
-        if ($RecipientName != '' && c('Garden.Email.OmitToName', false)) {
-            $RecipientName = '';
-        }
-
         ob_start();
         $this->PhpMailer->addAddress($RecipientEmail, $RecipientName);
         ob_end_clean();
@@ -311,9 +299,6 @@ class Gdn_Email extends Gdn_Pluggable {
      * an array of email addresses, this value will be ignored.
      */
     public function to($RecipientEmail, $RecipientName = '') {
-        if ($RecipientName != '' && c('Garden.Email.OmitToName', false)) {
-            $RecipientName = '';
-        }
 
         if (is_string($RecipientEmail)) {
             if (strpos($RecipientEmail, ',') > 0) {

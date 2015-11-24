@@ -16,6 +16,8 @@
  * This is a static class that hooks into the SPL autoloader.
  */
 class Gdn_Autoloader {
+
+    const CONTEXT_CORE = 'core';
     const CONTEXT_APPLICATION = 'application';
     const CONTEXT_PLUGIN = 'plugin';
     const CONTEXT_LOCALE = 'locale';
@@ -317,7 +319,7 @@ class Gdn_Autoloader {
      * @param type $MapRootLocation
      * @return Gdn_Autoloader_Map
      */
-    public static function getMap($MapType, $ContextType, $Extension = self::CONTEXT_PLUGIN, $MapRootLocation = PATH_CACHE) {
+    public static function getMap($MapType, $ContextType, $Extension = self::CONTEXT_CORE, $MapRootLocation = PATH_CACHE) {
         $MapHash = self::makeMapHash($MapType, $ContextType, $Extension, $MapRootLocation);
         return self::map($MapHash);
     }
@@ -532,7 +534,7 @@ class Gdn_Autoloader {
      * @param $ContextType
      * @param string $Extension
      */
-    public static function forceIndex($MapType, $ContextType, $Extension = self::CONTEXT_PLUGIN) {
+    public static function forceIndex($MapType, $ContextType, $Extension = self::CONTEXT_CORE) {
         $Map = self::getMap($MapType, $ContextType, $Extension);
         $Map->index();
     }
@@ -570,6 +572,7 @@ class Gdn_Autoloader {
     public static function start() {
 
         self::$prefixes = array(
+            self::CONTEXT_CORE => 'c',
             self::CONTEXT_APPLICATION => 'a',
             self::CONTEXT_PLUGIN => 'p',
             self::CONTEXT_THEME => 't'
@@ -579,6 +582,7 @@ class Gdn_Autoloader {
             self::CONTEXT_LOCALE,
             self::CONTEXT_PLUGIN,
             self::CONTEXT_APPLICATION,
+            self::CONTEXT_CORE
         );
 
         self::$maps = array();
@@ -586,6 +590,11 @@ class Gdn_Autoloader {
 
         // Register autoloader with the SPL
         spl_autoload_register(array('Gdn_Autoloader', 'lookup'));
+
+        // Configure library/core and library/database
+        self::registerMap(self::MAP_LIBRARY, self::CONTEXT_CORE, PATH_LIBRARY.'/core');
+        self::registerMap(self::MAP_LIBRARY, self::CONTEXT_CORE, PATH_LIBRARY.'/database');
+        self::registerMap(self::MAP_LIBRARY, self::CONTEXT_CORE, PATH_LIBRARY.'/vendors');
 
         // Register shutdown function to auto save changed cache files
         register_shutdown_function(array('Gdn_Autoloader', 'shutdown'));
@@ -1059,20 +1068,24 @@ class Gdn_Autoloader_Map {
     }
 
     /**
-     * Normalize paths
+     * Fix path with backslash for Windows OS.
      *
-     * Replaces any "\" with "/" and prepends another slash to a single leading slash. 
+     * Check to see if the path is not empty and if it is not in a form of drive: then replace any "\" with "/" to avoid
+     * the parse_fn_file bug and it also further check to see if it has only one "/" and the OS is "WIN" then it will prepend "/"
+     * in front of the path so it has the correct file path.
      *
      * @param string $path
      * @return string
      */
     function fixBackSlash($path) {
-        // Convert to slash to avoid parse_in_file create array with missing backslash.
-        $path = str_replace('\\', '/', $path);
+        if (!empty($path) && !preg_match('`^[a-z]:`i', $path)) {
+            // Convert to slash to avoid parse_in_file create array with missing backslash.
+            $path = str_replace("\\", "/", $path);
 
-        // If there is only 1 slash, add another to have a valid network path.
-        if (preg_match('`^/[^/]`', $path) && stripos(PHP_OS, 'win') === 0) {
-            $path = '/'.$path;
+            // If there is only 1 slash, add another to have a valid network path.
+            if (preg_match('`^/[^/]`', $path) && stripos(PHP_OS, 'win') === 0) {
+                $path = "/".$path;
+            }
         }
 
         return $path;

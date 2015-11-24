@@ -1,6 +1,5 @@
 (function($) {
-    $.fn.setAsEditor = function(selector) {
-        selector = selector || '.BodyBox';
+    $.fn.setAsEditor = function() {
 
         // If editor can be loaded, add class to body
         $('body').addClass('editor-active');
@@ -421,13 +420,17 @@
                         return false;
                     }
 
-                    // Fire event programmatically to do what needs to be done in
-                    // ButtonBar code.
-                    $(this).parent().find('.Button').trigger('click.insertData');
+                    // Make exception for non-wysiwyg, as wysihtml5 has custom
+                    // key handler.
+                    if (!$(this).closest('.editor').hasClass('editor-format-wysiwyg')) {
+                        // Fire event programmatically to do what needs to be done in
+                        // ButtonBar code.
+                        $(this).parent().find('.Button').trigger('click.insertData');
 
-                    e.stopPropagation();
-                    e.preventDefault();
-                    return false;
+                        e.stopPropagation();
+                        e.preventDefault();
+                        return false;
+                    }
                 }
             });
 
@@ -486,6 +489,16 @@
              }, 0);
              });
              */
+
+            // Handle quotes plugin using triggered event.
+            $('a.ReactButton.Quote').on('click', function(e) {
+                // Stop animation from other plugin and let this one
+                // handle the scroll, otherwise the scrolling jumps
+                // all over, and really distracts the eyes.
+                $('html, body').stop().animate({
+                    scrollTop: $(editor.textarea.element).parent().parent().offset().top
+                }, 800);
+            });
 
             $(editor.textarea.element).on('appendHtml', function(e, data) {
 
@@ -809,7 +822,7 @@
             var editorKey = 'editor-uploads-';
             var editorForm = $dndCueWrapper.closest('form');
 
-            var savedUploadsContainer = savedContainer = '';
+            var savedUploadsContainer = '';
             var mainCommentForm = '';
             if (editorForm) {
                 var formCommentId = $(editorForm).find('#Form_CommentID');
@@ -834,30 +847,20 @@
                 // Build editorKey
                 if (formCommentId.length
                     && parseInt(formCommentId[0].value) > 0) {
-                    var type = 'CommentID';
-                    var id = formCommentId[0].value;
                     editorKey += 'commentid' + formCommentId[0].value;
                 } else if (formDiscussionId.length
                     && parseInt(formDiscussionId[0].value) > 0) {
-                    var type = 'DiscussionID';
-                    var id = formDiscussionId[0].value;
                     editorKey += 'discussionid' + formDiscussionId[0].value;
                 } else if (formConversationId.length
                     && parseInt(formConversationId[0].value) > 0) {
-                    var type = 'ConversationID';
-                    var id = formConversationId[0].value;
                     editorKey += 'conversationid' + formConversationId[0].value;
                 }
 
-                // Make saved files editable from the form
+                // Make saved files editable
                 if (!mainCommentBox && editorKey != 'editor-uploads-') {
                     var savedContainer = $('#' + editorKey);
                     if (savedContainer.length && savedContainer.html().trim() != '') {
-                        savedContainer.hide();
-                        // Move existing uploads into preview container for better UX.
-                        var form = $('#Form_' + type + ':input[value="' + id + '"]').closest('form').find('.bodybox-wrap');
-                        form.children('.editor-upload-previews').html(savedContainer.html());
-                        savedUploadsContainer = form.children('.editor-upload-previews');
+                        savedUploadsContainer = savedContainer;
                     }
                 }
             }
@@ -946,13 +949,11 @@
                 // Turn read-only mode on. Event is fired from conversations.js
                 // and discussion.js.
                 $(editorForm).on('clearCommentForm', function(e) {
-                    $(savedContainer).addClass('editor-upload-readonly');
-                    $(savedContainer).show();
+                    $(savedUploadsContainer).addClass('editor-upload-readonly');
                 });
 
                 $(editorForm).on('clearMessageForm', function(e) {
-                    $(savedContainer).addClass('editor-upload-readonly');
-                    $(savedContainer).show();
+                    $(savedUploadsContainer).addClass('editor-upload-readonly');
                 });
 
                 $(savedUploadsContainer)
@@ -970,6 +971,9 @@
                             name: 'RemoveMediaIDs[]',
                             value: mediaId
                         }).appendTo($(editorForm));
+
+                        // Remove element from body.
+                        removeImageFromBody($editorFilePreview);
                     })
                     // This will remove the hidden input
                     .on('click.saved-file-reattach', '.editor-file-reattach', function(e) {
@@ -978,6 +982,9 @@
 
                         // Remove hidden input from form
                         $('#file-remove-' + mediaId).remove();
+
+                        // Re-attach
+                        insertImageIntoBody($editorFilePreview);
                     });
             }
 
@@ -1111,7 +1118,7 @@
                                     editorDropdownsClose();
                                 } else {
                                     // File dropped is not allowed!
-                                    var message = 'File ';
+                                    var message = '"' + filename + '" ';
 
                                     if (!validFile) {
                                         message += 'is not allowed';
@@ -1200,7 +1207,7 @@
 
                                 var payloadHeight = payload.original_height;
                                 var payloadWidth = payload.original_width;
-                                var editorWidth = $(this).find('.BodyBox').width();
+                                var editorWidth = $(editor.textarea.element).width();
 
                                 // Image max-width is 100%. Change the height to refect scaling down the width.
                                 if (editorWidth < payloadWidth) {
@@ -1763,7 +1770,7 @@
                                 }
 
                                 // Enable file uploads
-                                fileUploadsInit($currentEditableTextarea[0], '');
+                                fileUploadsInit($currentEditableTextarea, '');
 
                                 insertImageUrl($currentEditableTextarea);
                             });
@@ -1778,11 +1785,12 @@
             }
         } //editorInit
 
-        // Initialize new editors.
-        $(document).on('EditCommentFormLoaded popupReveal', function () {
-            editorInit('', $(selector));
-        })
-        editorInit('', this);
+        // Deprecated livequery.
+        if (jQuery().livequery) {
+            this.livequery(function() {
+                editorInit('', $(this));
+            });
+        }
 
         // jQuery chaining
         return this;

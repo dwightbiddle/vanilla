@@ -60,6 +60,7 @@ class EntryController extends Gdn_Controller {
         $this->Head->addTag('meta', array('name' => 'robots', 'content' => 'noindex'));
 
         $this->addJsFile('jquery.js');
+        $this->addJsFile('jquery.livequery.js');
         $this->addJsFile('jquery.form.js');
         $this->addJsFile('jquery.popup.js');
         $this->addJsFile('jquery.gardenhandleajaxform.js');
@@ -511,15 +512,13 @@ EOT;
             $AutoConnect = c('Garden.Registration.AutoConnect');
 
             if ($IsPostBack && $this->Form->getFormValue('ConnectName')) {
-                $searchName = $this->Form->getFormValue('ConnectName');
-            } else {
-                $searchName = $this->Form->getFormValue('Name');
+                $this->Form->setFormValue('Name', $this->Form->getFormValue('ConnectName'));
             }
 
             // Get the existing users that match the name or email of the connection.
             $Search = false;
-            if ($searchName && $NameUnique) {
-                $UserModel->SQL->orWhere('Name', $searchName);
+            if ($this->Form->getFormValue('Name') && $NameUnique) {
+                $UserModel->SQL->orWhere('Name', $this->Form->getFormValue('Name'));
                 $Search = true;
             }
             if ($this->Form->getFormValue('Email') && ($EmailUnique || $AutoConnect)) {
@@ -539,10 +538,6 @@ EOT;
 
             // Check to automatically link the user.
             if ($AutoConnect && count($ExistingUsers) > 0) {
-                if ($IsPostBack && $this->Form->getFormValue('ConnectName')) {
-                    $this->Form->setFormValue('Name', $this->Form->getFormValue('ConnectName'));
-                }
-
                 foreach ($ExistingUsers as $Row) {
                     if (strcasecmp($this->Form->getFormValue('Email'), $Row['Email']) === 0) {
                         $UserID = $Row['UserID'];
@@ -729,7 +724,7 @@ EOT;
                 $User['UserID'] = $UserID;
                 $this->Form->setValidationResults($UserModel->validationResults());
 
-                if ($UserID && c('Garden.Registration.SendConnectEmail', false)) {
+                if ($UserID) {
                     // Send the welcome email.
                     $UserModel->sendWelcomeEmail($UserID, '', 'Connect', array('ProviderName' => $this->Form->getFormValue('ProviderName', $this->Form->getFormValue('Provider', 'Unknown'))));
                 }
@@ -773,8 +768,8 @@ EOT;
         if ($this->_RealDeliveryType != DELIVERY_TYPE_ALL && $this->deliveryType() != DELIVERY_TYPE_ALL) {
             $this->deliveryMethod(DELIVERY_METHOD_JSON);
             $this->setHeader('Content-Type', 'application/json; charset='.c('Garden.Charset', 'utf-8'));
-        } elseif ($CheckPopup || $this->data('CheckPopup')) {
-            $this->addDefinition('CheckPopup', true);
+        } elseif ($CheckPopup) {
+            $this->addDefinition('CheckPopup', $CheckPopup);
         } else {
             redirect(url($this->RedirectUrl));
         }
@@ -1103,7 +1098,7 @@ EOT;
 
         if ($this->Form->isPostBack() === true) {
             $FormValues = $this->Form->formValues();
-            if (val('StopLinking', $FormValues)) {
+            if (ArrayValue('StopLinking', $FormValues)) {
                 $AuthResponse = Gdn_Authenticator::AUTH_ABORTED;
 
                 $UserEventData = array_merge(array(
@@ -1116,7 +1111,7 @@ EOT;
                 Gdn::request()->withRoute('DefaultController');
                 return Gdn::dispatcher()->dispatch();
 
-            } elseif (val('NewAccount', $FormValues)) {
+            } elseif (ArrayValue('NewAccount', $FormValues)) {
                 $AuthResponse = Gdn_Authenticator::AUTH_CREATED;
 
                 // Try and synchronize the user with the new username/email.
@@ -1150,7 +1145,7 @@ EOT;
                 if ($UserID > 0) {
                     $Data = $FormValues;
                     $Data['UserID'] = $UserID;
-                    $Data['Email'] = val('SignInEmail', $FormValues, '');
+                    $Data['Email'] = arrayValue('SignInEmail', $FormValues, '');
                     $UserID = $this->UserModel->synchronize($UserInfo['UserKey'], $Data);
                 }
             }
@@ -1206,8 +1201,8 @@ EOT;
             $this->Form->addHidden('Consumer', $UserInfo['ConsumerKey']);
         }
 
-        $this->setData('Name', val('Name', $this->Form->HiddenInputs));
-        $this->setData('Email', val('Email', $this->Form->HiddenInputs));
+        $this->setData('Name', arrayValue('Name', $this->Form->HiddenInputs));
+        $this->setData('Email', arrayValue('Email', $this->Form->HiddenInputs));
 
         $this->render();
     }
@@ -1372,18 +1367,18 @@ EOT;
                     Gdn::session()->start($AuthUserID);
 
                     if ($this->Form->getFormValue('RememberMe')) {
-                        Gdn::authenticator()->setIdentity($AuthUserID, true);
+                        Gdn::authenticator()->SetIdentity($AuthUserID, true);
                     }
 
                     try {
-                        $this->UserModel->sendWelcomeEmail($AuthUserID, '', 'Register');
+                        $this->UserModel->SendWelcomeEmail($AuthUserID, '', 'Register');
                     } catch (Exception $Ex) {
                     }
 
                     $this->fireEvent('RegistrationSuccessful');
 
                     // ... and redirect them appropriately
-                    $Route = $this->redirectTo();
+                    $Route = $this->RedirectTo();
                     if ($this->_DeliveryType != DELIVERY_TYPE_ALL) {
                         $this->RedirectUrl = url($Route);
                     } else {

@@ -21,10 +21,6 @@ class Gdn_Dummy {
         return $this;
     }
 
-    public static function __callStatic($Name, $Arguments) {
-        return self::getInstance();
-    }
-
     public function __get($Name) {
         return $this;
     }

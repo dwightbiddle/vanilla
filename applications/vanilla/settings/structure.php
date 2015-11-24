@@ -1,4 +1,6 @@
-<?php if (!defined('APPLICATION')) exit();
+<?php if (!defined('APPLICATION')) {
+    exit();
+      }
 /**
  * Vanilla database structure.
  *
@@ -15,7 +17,7 @@ if (!isset($Drop)) {
 }
 
 if (!isset($Explicit)) {
-    $Explicit = false;
+    $Explicit = true;
 }
 
 $SQL = Gdn::database()->sql();
@@ -111,8 +113,8 @@ $Construct
     ->column('Sink', 'tinyint(1)', '0')
     ->column('DateInserted', 'datetime', false, array('index', 'index.CategoryInserted'))
     ->column('DateUpdated', 'datetime', true)
-    ->column('InsertIPAddress', 'ipaddress', true)
-    ->column('UpdateIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
+    ->column('UpdateIPAddress', 'varchar(15)', true)
     ->column('DateLastComment', 'datetime', null, array('index', 'index.CategoryPages'))
     ->column('LastCommentUserID', 'int', true)
     ->column('Score', 'float', null)
@@ -178,8 +180,8 @@ $Construct
     ->column('DateInserted', 'datetime', null, array('index.1', 'index'))
     ->column('DateDeleted', 'datetime', true)
     ->column('DateUpdated', 'datetime', true)
-    ->column('InsertIPAddress', 'ipaddress', true)
-    ->column('UpdateIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
+    ->column('UpdateIPAddress', 'varchar(15)', true)
     ->column('Flag', 'tinyint', 0)
     ->column('Score', 'float', null)
     ->column('Attributes', 'text', true)
@@ -315,6 +317,7 @@ $PermissionModel->Define(
 
 $PermissionModel->Undefine('Vanilla.Spam.Manage');
 
+
 /*
 Apr 26th, 2010
 Removed FirstComment from :_Discussion and moved it into the discussion table.
@@ -407,5 +410,5 @@ include(PATH_APPLICATIONS.DS.'vanilla'.DS.'settings'.DS.'stub.php');
 // Set current Vanilla.Version
 $ApplicationInfo = array();
 include(CombinePaths(array(PATH_APPLICATIONS.DS.'vanilla'.DS.'settings'.DS.'about.php')));
-$Version = val('Version', val('Vanilla', $ApplicationInfo, array()), 'Undefined');
+$Version = arrayValue('Version', arrayValue('Vanilla', $ApplicationInfo, array()), 'Undefined');
 saveToConfig('Vanilla.Version', $Version);

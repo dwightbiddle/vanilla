@@ -112,7 +112,7 @@ class Gdn_UploadImage extends Gdn_Upload {
     public static function saveImageAs($Source, $Target, $Height = '', $Width = '', $Options = array()) {
         $Crop = false;
         $OutputType = '';
-        $ImageQuality = c('Garden.UploadImage.Quality', 100);
+        $ImageQuality = C('Garden.UploadImage.Quality', 75);
 
         // Make function work like it used to.
         $Args = func_get_args();

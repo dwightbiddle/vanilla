@@ -15,6 +15,10 @@ jQuery(document).ready(function($) {
         if ($(this).hasClass('WriteButton')) {
             var frm = $(this).parents('.MessageForm').find('form');
             frm.trigger('WriteButtonClick', [frm]);
+
+            // Reveal the "Preview" button and hide this one
+            $(this).parents('.CommentForm').find('.PreviewButton').show();
+            $(this).addClass('Hidden');
         }
 
         resetCommentForm(this);
@@ -155,8 +159,8 @@ jQuery(document).ready(function($) {
                     $(btn).hide();
                     $(parent).find('.WriteButton').removeClass('Hidden');
 
-                    $(frm).find('.TextBoxWrapper').hide().after(json.Data);
                     $(frm).trigger('PreviewLoaded', [frm]);
+                    $(frm).find('.TextBoxWrapper').hide().after(json.Data);
 
                 } else if (!draft) {
                     // Clean up the form
@@ -219,9 +223,6 @@ jQuery(document).ready(function($) {
         $(parent).find('.Preview').remove();
         $(parent).find('.TextBoxWrapper').show();
         $('.TinyProgress').remove();
-
-        parent.find('.PreviewButton').show();
-        parent.find('.WriteButton').addClass('Hidden');
     }
 
     // Utility function to clear out the comment form
@@ -299,8 +300,6 @@ jQuery(document).ready(function($) {
                 }
             });
         } else {
-            resetCommentForm($(parent).find('form'));
-            clearCommentForm($(parent).find('form'));
             $(parent).find('div.EditCommentForm').remove();
             $(parent).find('span.TinyProgress').remove();
             $(msg).show();

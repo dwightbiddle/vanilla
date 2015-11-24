@@ -13,7 +13,7 @@ if (!isset($Drop)) {
 }
 
 if (!isset($Explicit)) {
-    $Explicit = false;
+    $Explicit = true;
 }
 
 $SQL = $Database->sql();
@@ -41,10 +41,10 @@ $Construct
     ->column('FirstMessageID', 'int', true, 'key')
     ->column('InsertUserID', 'int', false, 'key')
     ->column('DateInserted', 'datetime', null, 'key')
-    ->column('InsertIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
     ->column('UpdateUserID', 'int', false, 'key')
     ->column('DateUpdated', 'datetime')
-    ->column('UpdateIPAddress', 'ipaddress', true)
+    ->column('UpdateIPAddress', 'varchar(15)', true)
     ->column('CountMessages', 'int', 0)
     ->column('CountParticipants', 'int', 0)
     ->column('LastMessageID', 'int', null)
@@ -94,7 +94,7 @@ $Construct->table('ConversationMessage')
     ->column('Format', 'varchar(20)', null)
     ->column('InsertUserID', 'int', null, 'key')
     ->column('DateInserted', 'datetime', false)
-    ->column('InsertIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
     ->set($Explicit, $Drop);
 
 if ($UpdateCountMessages) {

@@ -26,7 +26,7 @@ class MessageController extends DashboardController {
         $this->permission('Garden.Community.Manage');
         // Use the edit form with no MessageID specified.
         $this->View = 'Edit';
-        $this->edit();
+        $this->Edit();
     }
 
     /**
@@ -43,7 +43,7 @@ class MessageController extends DashboardController {
         if ($TransientKey !== false && $Session->validateTransientKey($TransientKey)) {
             $Message = $this->MessageModel->delete(array('MessageID' => $MessageID));
             // Reset the message cache
-            $this->MessageModel->setMessageCache();
+            $this->MessageModel->SetMessageCache();
         }
 
         if ($this->_DeliveryType === DELIVERY_TYPE_ALL) {
@@ -140,6 +140,7 @@ class MessageController extends DashboardController {
         $this->addSideMenu('dashboard/message');
         $this->addJsFile('jquery.autosize.min.js');
         $this->addJsFile('jquery.tablednd.js');
+        $this->addJsFile('jquery-ui.js');
         $this->addJsFile('messages.js');
         $this->title(t('Messages'));
 

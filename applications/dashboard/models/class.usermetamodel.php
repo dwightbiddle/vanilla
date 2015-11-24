@@ -173,9 +173,7 @@ class UserMetaModel extends Gdn_Model {
             }
 
             $CacheKey = 'UserMeta_'.$UserID;
-            Gdn::cache()->store($CacheKey, $UserMeta, array(
-                Gdn_Cache::FEATURE_EXPIRY => 3600
-            ));
+            Gdn::cache()->store($CacheKey, $UserMeta);
 
             // Update the DB.
             $this->SQL->reset();

@@ -62,7 +62,7 @@ class Gdn_Request {
      *
      */
     private function __construct() {
-        $this->reset();
+        $this->Reset();
     }
 
     /**
@@ -70,16 +70,16 @@ class Gdn_Request {
      *
      * The asset root represents the folder that static assets are served from.
      *
-     * @param string? $assetRoot An asset root to set.
+     * @param $AssetRoot Optional An asset root to set
      * @return string Returns the current asset root.
      */
-    public function assetRoot($assetRoot = null) {
-        if ($assetRoot !== null) {
-            $result = $this->_parsedRequestElement('AssetRoot', rtrim('/'.trim($assetRoot, '/'), '/'));
+    public function assetRoot($AssetRoot = null) {
+        if ($AssetRoot !== null) {
+            $Result = $this->_parsedRequestElement('AssetRoot', rtrim('/'.trim($AssetRoot, '/'), '/'));
         } else {
-            $result = $this->_parsedRequestElement('AssetRoot');
+            $Result = $this->_parsedRequestElement('AssetRoot');
         }
-        return $result;
+        return $Result;
     }
 
     /**
@@ -122,25 +122,25 @@ class Gdn_Request {
      *  - FOLDER   -> none. this is extracted from SCRIPT_NAME and only available after _ParseRequest()
      *  - SCHEME   -> none. this is derived from 'HTTPS' and 'X-Forwarded-Proto'
      *
-     * @param $key Key to retrieve or set.
-     * @param $value Value of $Key key to set.
+     * @param $Key Key to retrieve or set.
+     * @param $Value Value of $Key key to set.
      * @return string | NULL
      */
-    protected function _environmentElement($key, $value = null) {
-        $key = strtoupper($key);
-        if ($value !== null) {
+    protected function _environmentElement($Key, $Value = null) {
+        $Key = strtoupper($Key);
+        if ($Value !== null) {
             $this->_HaveParsedRequest = false;
 
-            switch ($key) {
+            switch ($Key) {
                 case 'URI':
-                    $value = !is_null($value) ? urldecode($value) : $value;
+                    $Value = !is_null($Value) ? urldecode($Value) : $Value;
                     break;
                 case 'SCRIPT':
-                    $value = !is_null($value) ? trim($value, '/') : $value;
+                    $Value = !is_null($Value) ? trim($Value, '/') : $Value;
                     break;
                 case 'HOST':
-                    $hostParts = explode(':', $value);
-                    $value = array_shift($hostParts);
+                    $HostParts = explode(':', $Value);
+                    $Value = array_shift($HostParts);
                     break;
                 case 'SCHEME':
                 case 'METHOD':
@@ -150,11 +150,11 @@ class Gdn_Request {
                     break;
             }
 
-            $this->_Environment[$key] = $value;
+            $this->_Environment[$Key] = $Value;
         }
 
-        if (array_key_exists($key, $this->_Environment)) {
-            return $this->_Environment[$key];
+        if (array_key_exists($Key, $this->_Environment)) {
+            return $this->_Environment[$Key];
         }
 
         return null;
@@ -165,13 +165,13 @@ class Gdn_Request {
      *
      * @return string
      */
-    public function __call($method, $args) {
-        $matches = [];
-        if (preg_match('/^(Request)(.*)$/i', $method, $matches)) {
-            $passedArg = (is_array($args) && sizeof($args)) ? $args[0] : null;
-            return $this->_environmentElement(strtoupper($matches[2]), $passedArg);
+    public function __call($Method, $Args) {
+        $Matches = array();
+        if (preg_match('/^(Request)(.*)$/i', $Method, $Matches)) {
+            $PassedArg = (is_array($Args) && sizeof($Args)) ? $Args[0] : null;
+            return $this->_environmentElement(strtoupper($Matches[2]), $PassedArg);
         } else {
-            trigger_error("Call to unknown method 'Gdn_Request->{$method}'", E_USER_ERROR);
+            trigger_error("Call to unknown method 'Gdn_Request->{$Method}'", E_USER_ERROR);
         }
     }
 
@@ -180,11 +180,11 @@ class Gdn_Request {
      *
      * Mostly used in conjunction with FromImport()
      *
-     * @param $export Data group to export
+     * @param $Export Data group to export
      * @return mixed
      */
-    public function export($export) {
-        switch ($export) {
+    public function export($Export) {
+        switch ($Export) {
             case 'Environment':
                 return $this->_Environment;
             case 'Arguments':
@@ -202,11 +202,11 @@ class Gdn_Request {
      * As with the case above (OutputFormat), this value depends heavily on there being a filename
      * at the end of the URI. In the example above, Filename() would return 'cashflow2009.pdf'.
      *
-     * @param $filename Optional Filename to set.
+     * @param $Filename Optional Filename to set.
      * @return string
      */
-    public function filename($filename = null) {
-        return $this->_parsedRequestElement('Filename', $filename);
+    public function filename($Filename = null) {
+        return $this->_parsedRequestElement('Filename', $Filename);
     }
 
     /**
@@ -229,15 +229,15 @@ class Gdn_Request {
      *
      * This method allows one method to import the raw information of another request
      *
-     * @param $newRequest New Request from which to import environment and arguments.
+     * @param $NewRequest New Request from which to import environment and arguments.
      * @flow chain
      * @return Gdn_Request
      */
-    public function fromImport($newRequest) {
+    public function fromImport($NewRequest) {
         // Import Environment
-        $this->_Environment = $newRequest->export('Environment');
+        $this->_Environment = $NewRequest->export('Environment');
         // Import Arguments
-        $this->_RequestArguments = $newRequest->export('Arguments');
+        $this->_RequestArguments = $NewRequest->export('Arguments');
 
         $this->_HaveParsedRequest = false;
         $this->_Parsing = false;
@@ -247,31 +247,31 @@ class Gdn_Request {
     /**
      * Get a value from the GET array or return the entire GET array.
      *
-     * @param string|null $key The key of the get item or null to return the entire get array.
-     * @param mixed $default The value to return if the item isn't set.
+     * @param string|null $Key The key of the get item or null to return the entire get array.
+     * @param mixed $Default The value to return if the item isn't set.
      * @return mixed
      */
-    public function get($key = null, $default = null) {
-        if ($key === null) {
+    public function get($Key = null, $Default = null) {
+        if ($Key === null) {
             return $this->getRequestArguments(self::INPUT_GET);
         } else {
-            return $this->getValueFrom(self::INPUT_GET, $key, $default);
+            return $this->getValueFrom(self::INPUT_GET, $Key, $Default);
         }
     }
 
     /**
      * Export an entire dataset (effectively, one of the superglobals) from the request arguments list
      *
-     * @param int $paramType Type of data to export. One of the self::INPUT_* constants
+     * @param int $ParamType Type of data to export. One of the self::INPUT_* constants
      * @return array
      */
-    public function getRequestArguments($paramType = null) {
-        if ($paramType === null) {
+    public function getRequestArguments($ParamType = null) {
+        if ($ParamType === null) {
             return $this->_RequestArguments;
-        } elseif (!isset($this->_RequestArguments[$paramType])) {
-            return [];
-        } else {
-            return $this->_RequestArguments[$paramType];
+        } elseif (!isset($this->_RequestArguments[$ParamType]))
+            return array();
+        else {
+            return $this->_RequestArguments[$ParamType];
         }
     }
 
@@ -279,46 +279,46 @@ class Gdn_Request {
      * Search the currently attached data arrays for the requested argument (in order) and
      * return the first match. Return $Default if not found.
      *
-     * @param string $key Name of the request argument to retrieve.
-     * @param mixed $default Value to return if argument not found.
+     * @param string $Key Name of the request argument to retrieve.
+     * @param mixed $Default Value to return if argument not found.
      * @return mixed
      */
-    public function getValue($key, $default = false) {
-        return $this->merged($key, $default);
+    public function getValue($Key, $Default = false) {
+        return $this->Merged($Key, $Default);
     }
 
     /**
      * Search one of the currently attached data arrays for the requested argument and return its value
      * or $Default if not found.
      *
-     * @param $paramType Which request argument array to query for this value. One of the self::INPUT_* constants
-     * @param $key Name of the request argument to retrieve.
-     * @param $default Value to return if argument not found.
+     * @param $ParamType Which request argument array to query for this value. One of the self::INPUT_* constants
+     * @param $Key Name of the request argument to retrieve.
+     * @param $Default Value to return if argument not found.
      * @return mixed
      */
-    public function getValueFrom($paramType, $key, $default = false) {
-        $paramType = strtolower($paramType);
+    public function getValueFrom($ParamType, $Key, $Default = false) {
+        $ParamType = strtolower($ParamType);
 
-        if (array_key_exists($paramType, $this->_RequestArguments) && array_key_exists($key, $this->_RequestArguments[$paramType])) {
-            $value = $this->_RequestArguments[$paramType][$key];
-            if (is_array($value) || is_object($value)) {
-                return $value;
+        if (array_key_exists($ParamType, $this->_RequestArguments) && array_key_exists($Key, $this->_RequestArguments[$ParamType])) {
+            $Val = $this->_RequestArguments[$ParamType][$Key];
+            if (is_array($Val) || is_object($Val)) {
+                return $Val;
             } else {
-                return $value;
+                return $Val;
             }
         }
-        return $default;
+        return $Default;
     }
 
     /**
      * Gets/Sets the host from the current url. e.g. "foo.com" in
      * "http://foo.com/this/that/garden/index.php?/controller/action/"
      *
-     * @param $hostname optional value to set.
+     * @param $HostName optional value to set.
      * @return string | NULL
      */
-    public function host($hostname = null) {
-        return $this->requestHost($hostname);
+    public function host($Hostname = null) {
+        return $this->requestHost($Hostname);
     }
 
     /**
@@ -327,20 +327,15 @@ class Gdn_Request {
      * @since 2.1
      */
     public function hostAndPort() {
-        $host = $this->host();
-        $port = $this->port();
-        if (!in_array($port, [80, 443])) {
-            return $host.':'.$port;
+        $Host = $this->host();
+        $Port = $this->port();
+        if (!in_array($Port, array(80, 443))) {
+            return $Host.':'.$Port;
         } else {
-            return $host;
+            return $Host;
         }
     }
 
-    /**
-     * Alias for requestAddress()
-     *
-     * @return type
-     */
     public function ipAddress() {
         return $this->requestAddress();
     }
@@ -348,31 +343,18 @@ class Gdn_Request {
     /**
      * Returns a boolean value indicating if the current page has an authenticated postback.
      *
-     * @param bool $throw Whether or not to throw an exception if this is a postback AND the transient key doesn't validate.
-     * @return bool Returns true if the postback could be authenticated or false otherwise.
-     * @throws Gdn_UserException Throws an exception when this is a postback AND the transient key doesn't validate.
+     * @return type
      * @since 2.1
      */
-    public function isAuthenticatedPostBack($throw = false) {
-        if (!$this->isPostBack()) {
+    public function IsAuthenticatedPostBack() {
+        if (!$this->IsPostBack()) {
             return false;
         }
 
-        $transientKey = Gdn::request()->post('TransientKey', false);
-        $result = Gdn::session()->validateTransientKey($transientKey, false);
-
-        if (!$result && $throw) {
-            throw new Gdn_UserException('The CSRF token is invalid.', 403);
-        }
-
-        return $result;
+        $PostBackKey = Gdn::request()->post('TransientKey', false);
+        return Gdn::session()->validateTransientKey($PostBackKey, false);
     }
 
-    /**
-     * Check if request was a POST
-     *
-     * @return bool
-     */
     public function isPostBack() {
         return strcasecmp($this->requestMethod(), 'post') == 0;
     }
@@ -413,164 +395,156 @@ class Gdn_Request {
         $this->_environmentElement('ConfigStripUrls', Gdn::config('Garden.StripWebRoot', false));
 
         if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
-            $host = $_SERVER['HTTP_X_FORWARDED_HOST'];
+            $Host = $_SERVER['HTTP_X_FORWARDED_HOST'];
         } elseif (isset($_SERVER['HTTP_HOST'])) {
-            $host = $_SERVER['HTTP_HOST'];
+            $Host = $_SERVER['HTTP_HOST'];
         } else {
-            $host = val('SERVER_NAME', $_SERVER);
+            $Host = val('SERVER_NAME', $_SERVER);
         }
 
         // The host can have the port passed in, remove it here if it exists
-        $hostParts = explode(':', $host, 2);
-        $host = $hostParts[0];
+        $Host = explode(':', $Host, 2);
+        $Host = $Host[0];
 
-        $rawPort = null;
-        if (count($hostParts) > 1) {
-            $rawPort = $hostParts[1];
-        }
-
-        $this->requestHost($host);
+        $this->requestHost($Host);
         $this->requestMethod(isset($_SERVER['REQUEST_METHOD']) ? val('REQUEST_METHOD', $_SERVER) : 'CONSOLE');
 
         // Request IP
 
-        // Load balancers
-        if ($testIP = val('HTTP_X_CLUSTER_CLIENT_IP', $_SERVER)) {
-            $ip = $testIP;
-        } elseif ($testIP = val('HTTP_CLIENT_IP', $_SERVER)) {
-            $ip = $testIP;
-        } elseif ($testIP = val('HTTP_X_FORWARDED_FOR', $_SERVER)) {
-            $ip = $testIP;
+        // Loadbalancers
+        if ($TestIP = val('HTTP_X_CLUSTER_CLIENT_IP', $_SERVER)) {
+            $IP = $TestIP;
+        } elseif ($TestIP = val('HTTP_CLIENT_IP', $_SERVER)) {
+            $IP = $TestIP;
+        } elseif ($TestIP = val('HTTP_X_FORWARDED_FOR', $_SERVER)) {
+            $IP = $TestIP;
         } else {
-            $ip = val('REMOTE_ADDR', $_SERVER);
+            $IP = val('REMOTE_ADDR', $_SERVER);
         }
 
-        if (strpos($ip, ',') !== false) {
-            $matched = preg_match_all('/([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})(?:, )?/i', $ip, $matches);
+        if (strpos($IP, ',') !== false) {
+            $Matched = preg_match_all('/([\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})(?:, )?/i', $IP, $Matches);
 
             // If we found matching IPs
-            if ($matched) {
-                $ips = $matches[1];
-                $ip = $ips[0];
+            if ($Matched) {
+                $IPs = $Matches[1];
+                $IP = $IPs[0];
 
                 // Fallback
             } else {
-                $remoteAddr = val('REMOTE_ADDR', $_SERVER);
-
-                if (strpos($remoteAddr, ',') !== false) {
-                    $remoteAddr = substr($remoteAddr, 0, strpos($remoteAddr, ','));
-                }
-
-                $ip = $remoteAddr;
+                $IP = $_SERVER['REMOTE_ADDR'];
             }
-        }
-
-        $ip = forceIPv4($ip);
-        $this->requestAddress($ip);
-
-        // Request Scheme
-
-        $scheme = 'http';
-
-        // Webserver-originated SSL
-        if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') {
-            $scheme = 'https';
-        }
-
-        // Loadbalancer-originated (and terminated) SSL
-        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https') {
-            $scheme = 'https';
         }
 
         // Varnish
-        $originalProto = val('HTTP_X_ORIGINALLY_FORWARDED_PROTO', $_SERVER, null);
-        if (!is_null($originalProto)) {
-            $scheme = $originalProto;
+        $OriginalIP = val('HTTP_X_ORIGINALLY_FORWARDED_FOR', $_SERVER, null);
+        if (!is_null($OriginalIP)) {
+            $IP = $OriginalIP;
         }
 
-        $this->requestScheme($scheme);
+        $IP = forceIPv4($IP);
+        $this->requestAddress($IP);
+
+        // Request Scheme
+
+        $Scheme = 'http';
+        // Webserver-originated SSL
+        if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') {
+            $Scheme = 'https';
+        }
+        // Loadbalancer-originated (and terminated) SSL
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https') {
+            $Scheme = 'https';
+        }
+        // Varnish
+        $OriginalProto = val('HTTP_X_ORIGINALLY_FORWARDED_PROTO', $_SERVER, null);
+        if (!is_null($OriginalProto)) {
+            $Scheme = $OriginalProto;
+        }
+
+        $this->requestScheme($Scheme);
 
         if (isset($_SERVER['SERVER_PORT'])) {
-            $port = $_SERVER['SERVER_PORT'];
-        } elseif ($rawPort) {
-            $port = $rawPort;
-        } else {
-            if ($scheme === 'https') {
-                $port = 443;
-            } else {
-                $port = 80;
-            }
+            $Port = $_SERVER['SERVER_PORT'];
+        } elseif ($Scheme === 'https')
+            $Port = 443;
+        else {
+            $Port = 80;
         }
-        $this->port($port);
+        $this->port($Port);
 
         if (is_array($_GET)) {
-            $get = false;
-            if ($get === false) {
-                $get =& $_GET;
+            $Get = false;
+            if ($Get === false) {
+                $Get =& $_GET;
             }
-            if (!is_array($get)) {
-                $original = [];
-                parse_str($get, $original);
-                safeParseStr($get, $get, $original);
+            if (!is_array($Get)) {
+                $Original = array();
+                parse_str($Get, $Original);
+                safeParseStr($Get, $Get, $Original);
             }
 
             if (!empty($_SERVER['X_REWRITE'])) {
-                $path = $_SERVER['PATH_INFO'];
-            } elseif (isset($get['_p'])) {
-                $path = $get['_p'];
+                $Path = $_SERVER['PATH_INFO'];
+            } elseif (isset($Get['_p'])) {
+                $Path = $Get['_p'];
                 unset($_GET['_p']);
-            } elseif (isset($get['p'])) {
-                $path = $get['p'];
+            } elseif (isset($Get['p'])) {
+                $Path = $Get['p'];
                 unset($_GET['p']);
             } else {
-                $path = '';
+                $Path = '';
             }
 
-            $this->requestURI($path);
+            $this->RequestURI($Path);
         }
 
-        $possibleScriptNames = [];
+        $PossibleScriptNames = array();
         if (isset($_SERVER['SCRIPT_NAME'])) {
-            $possibleScriptNames[] = $_SERVER['SCRIPT_NAME'];
+            $PossibleScriptNames[] = $_SERVER['SCRIPT_NAME'];
         }
 
         if (isset($_ENV['SCRIPT_NAME'])) {
-            $possibleScriptNames[] = $_ENV['SCRIPT_NAME'];
+            $PossibleScriptNames[] = $_ENV['SCRIPT_NAME'];
         }
 
         if (PHP_SAPI === 'cgi' && isset($_ENV['SCRIPT_URL'])) {
-            $possibleScriptNames[] = $_ENV['SCRIPT_URL'];
+            $PossibleScriptNames[] = $_ENV['SCRIPT_URL'];
         }
 
         if (isset($_SERVER['SCRIPT_FILENAME'])) {
-            $possibleScriptNames[] = $_SERVER['SCRIPT_FILENAME'];
+            $PossibleScriptNames[] = $_SERVER['SCRIPT_FILENAME'];
         }
 
         if (isset($_SERVER['ORIG_SCRIPT_NAME'])) {
-            $possibleScriptNames[] = $_SERVER['ORIG_SCRIPT_NAME'];
+            $PossibleScriptNames[] = $_SERVER['ORIG_SCRIPT_NAME'];
         }
 
         $this->requestFolder('');
-        foreach ($possibleScriptNames as $scriptName) {
-            $script = basename($scriptName);
-            $this->requestScript($script);
+        $TrimURI = trim($this->requestURI(), '/');
+        foreach ($PossibleScriptNames as $ScriptName) {
+            $Script = basename($ScriptName);
+            $this->requestScript($Script);
 
-            $folder = substr($scriptName, 0, 0 - strlen($script));
+            $Folder = substr($ScriptName, 0, 0 - strlen($Script));
+            $TrimFolder = trim($Folder, '/');
+            $TrimScript = trim($Script, '/');
+
             if (isset($_SERVER['DOCUMENT_ROOT'])) {
-                $documentRoot = $_SERVER['DOCUMENT_ROOT'];
+                $DocumentRoot = $_SERVER['DOCUMENT_ROOT'];
             } else {
-                $absolutePath = str_replace("\\", "/", realpath($script));
-                $documentRoot = substr($absolutePath, 0, strpos($absolutePath, $scriptName));
+                $AbsolutePath = str_replace("\\", "/", realpath($Script));
+                $DocumentRoot = substr($AbsolutePath, 0, strpos($AbsolutePath, $ScriptName));
             }
 
-            if (!$documentRoot) {
+            if (!$DocumentRoot) {
                 continue;
             }
-            $trimRoot = rtrim($documentRoot);
-            $realFolder = str_replace($trimRoot, '', $folder);
+            $TrimRoot = rtrim($DocumentRoot);
+            $RealFolder = str_replace($TrimRoot, '', $Folder);
 
-            if (!empty($realFolder)) {
-                $this->requestFolder(ltrim($realFolder, '/'));
+            if (!empty($RealFolder)) {
+                $this->requestFolder(ltrim($RealFolder, '/'));
                 break;
             }
         }
@@ -589,12 +563,12 @@ class Gdn_Request {
      *    http://www.forum.com/vanilla/index.php?/discussion/345897/attachment/234/download/cashflow2009.pdf
      * then this method will return the filetype (in this case 'pdf').
      *
-     * @param $outputFormat Optional OutputFormat to set.
+     * @param $OutputFormat Optional OutputFormat to set.
      * @return string | NULL
      */
-    public function outputFormat($outputFormat = null) {
-        $outputFormat = (!is_null($outputFormat)) ? strtolower($outputFormat) : $outputFormat;
-        return $this->_parsedRequestElement('OutputFormat', $outputFormat);
+    public function outputFormat($OutputFormat = null) {
+        $OutputFormat = (!is_null($OutputFormat)) ? strtolower($OutputFormat) : $OutputFormat;
+        return $this->_parsedRequestElement('OutputFormat', $OutputFormat);
     }
 
     /**
@@ -613,15 +587,15 @@ class Gdn_Request {
          * Resolve final request to send to dispatcher
          */
 
-        $path = $this->_environmentElement('URI');
+        $Path = $this->_environmentElement('URI');
 
         // Get the dispatch string from the URI
-        if ($path !== false) {
-            $this->path(trim($path, '/'));
+        if ($Path !== false) {
+            $this->path(trim($Path, '/'));
         } else {
-            $expression = '/^(?:\/?'.str_replace('/', '\/', $this->_environmentElement('Folder')).')?(?:'.$this->_environmentElement('Script').')?\/?(.*?)\/?(?:[#?].*)?$/i';
-            if (preg_match($expression, $this->_environmentElement('URI'), $match)) {
-                $this->path($match[1]);
+            $Expression = '/^(?:\/?'.str_replace('/', '\/', $this->_environmentElement('Folder')).')?(?:'.$this->_environmentElement('Script').')?\/?(.*?)\/?(?:[#?].*)?$/i';
+            if (preg_match($Expression, $this->_environmentElement('URI'), $Match)) {
+                $this->path($Match[1]);
             } else {
                 $this->path('');
             }
@@ -631,13 +605,13 @@ class Gdn_Request {
          * Resolve optional output modifying file extensions (rss, json, etc)
          */
 
-        $urlParts = explode('/', $this->path());
-        $last = array_slice($urlParts, -1, 1);
-        $lastParam = array_pop($last);
-        $match = [];
-        if (preg_match('/^(.+)\.([^.]{1,4})$/', $lastParam, $match)) {
-            $this->outputFormat($match[2]);
-            $this->filename($match[0]);
+        $UrlParts = explode('/', $this->path());
+        $Last = array_slice($UrlParts, -1, 1);
+        $LastParam = array_pop($Last);
+        $Match = array();
+        if (preg_match('/^(.+)\.([^.]{1,4})$/', $LastParam, $Match)) {
+            $this->outputFormat($Match[2]);
+            $this->filename($Match[0]);
             //$this->Path(implode('/',array_slice($UrlParts, 0, -1)));
         }
 
@@ -645,33 +619,43 @@ class Gdn_Request {
          * Resolve WebRoot
          */
 
-        // Attempt to get the web root from the server.
-        $webRoot = str_replace('\\', '/', val('SCRIPT_NAME', $_SERVER, ''));
-        if (($pos = strrpos($webRoot, '/index.php')) !== false) {
-            $webRoot = substr($webRoot, 0, $pos);
+        // Attempt to get the webroot from the server
+        $WebRoot = false;
+        if (!$WebRoot) {
+            $WebRoot = explode('/', val('PHP_SELF', $_SERVER, ''));
+
+            // Look for index.php to figure out where the web root is.
+            $Key = array_search('index.php', $WebRoot);
+            if ($Key !== false) {
+                $WebRoot = implode('/', array_slice($WebRoot, 0, $Key));
+            } else {
+                // Could not determine webroot.
+                $WebRoot = '';
+            }
+
         }
 
-        $parsedWebRoot = trim($webRoot, '/');
-        $this->webRoot($parsedWebRoot);
-        $this->assetRoot($parsedWebRoot);
+        $ParsedWebRoot = trim($WebRoot, '/');
+        $this->webRoot($ParsedWebRoot);
+        $this->assetRoot($ParsedWebRoot);
 
         /**
          * Resolve Domain
          */
 
-        $domain = false;
-        if ($domain === false || $domain == '') {
-            $domain = $this->hostAndPort();
+        $Domain = false;
+        if ($Domain === false || $Domain == '') {
+            $Domain = $this->hostAndPort();
         }
 
-        if ($domain != '' && $domain !== false) {
-            if (!stristr($domain, '://')) {
-                $domain = $this->scheme().'://'.$domain;
+        if ($Domain != '' && $Domain !== false) {
+            if (!stristr($Domain, '://')) {
+                $Domain = $this->scheme().'://'.$Domain;
             }
 
-            $domain = trim($domain, '/');
+            $Domain = trim($Domain, '/');
         }
-        $this->domain($domain);
+        $this->domain($Domain);
 
         $this->_Parsing = false;
         $this->_HaveParsedRequest = true;
@@ -684,22 +668,22 @@ class Gdn_Request {
      * A second argument can be supplied, which causes the value of the specified key to be changed
      * to that of the second parameter itself.
      *
-     * @param string $key element key to retrieve or set
-     * @param string $value value of $Key key to set
+     * @param string $Key element key to retrieve or set
+     * @param string $Value value of $Key key to set
      * @return string|null
      */
-    protected function _parsedRequestElement($key, $value = null) {
+    protected function _parsedRequestElement($Key, $Value = null) {
         // Lazily parse if not already parsed
         if (!$this->_HaveParsedRequest && !$this->_Parsing) {
             $this->_parseRequest();
         }
 
-        if ($value !== null) {
-            $this->_ParsedRequest[$key] = $value;
+        if ($Value !== null) {
+            $this->_ParsedRequest[$Key] = $Value;
         }
 
-        if (array_key_exists($key, $this->_ParsedRequest)) {
-            return $this->_ParsedRequest[$key];
+        if (array_key_exists($Key, $this->_ParsedRequest)) {
+            return $this->_ParsedRequest[$Key];
         }
 
         return null;
@@ -708,114 +692,114 @@ class Gdn_Request {
     /**
      * Gets/Sets the final path to be sent to the dispatcher.
      *
-     * @param string|true|null $path Optional Path to set
+     * @param string|true|null $Path Optional Path to set
      *  - string: Set a new path.
      *  - true: Url encode the returned path.
      *  - null: Return the path.
      * @return string | NULL
      */
-    public function path($path = null) {
-        if (is_string($path)) {
-            $result = $this->_parsedRequestElement('Path', $path);
+    public function path($Path = null) {
+        if (is_string($Path)) {
+            $Result = $this->_parsedRequestElement('Path', $Path);
         } else {
-            $result = $this->_parsedRequestElement('Path');
-            if ($path === true) {
+            $Result = $this->_parsedRequestElement('Path');
+            if ($Path === true) {
                 // Encode the path.
-                $parts = explode('/', $result);
-                $parts = array_map('urlencode', $parts);
-                $result = implode('/', $parts);
+                $Parts = explode('/', $Result);
+                $Parts = array_map('urlencode', $Parts);
+                $Result = implode('/', $Parts);
             }
         }
 
-        return $result;
+        return $Result;
     }
 
-    public function pathAndQuery($pathAndQuery = null) {
+    public function pathAndQuery($PathAndQuery = null) {
         // Set the path and query if it is supplied.
-        if ($pathAndQuery) {
+        if ($PathAndQuery) {
             // Parse out the path into parts.
-            $parts = parse_url($pathAndQuery);
-            $path = val('path', $parts, '');
+            $Parts = parse_url($PathAndQuery);
+            $Path = val('path', $Parts, '');
 
             // Check for a filename.
-            $filename = basename($path);
-            if (strpos($filename, '.') === false) {
-                $filename = 'default';
+            $Filename = basename($Path);
+            if (strpos($Filename, '.') === false) {
+                $Filename = 'default';
             }
-            $path = trim($path, '/');
+            $Path = trim($Path, '/');
 
-            $query = val('query', $parts, '');
-            if (strlen($query) > 0) {
-                parse_str($query, $get);
+            $Query = val('query', $Parts, '');
+            if (strlen($Query) > 0) {
+                parse_str($Query, $Get);
             } else {
-                $get = [];
+                $Get = array();
             }
 
             // Set the parts of the query here.
             if (!$this->_HaveParsedRequest) {
                 $this->_parseRequest();
             }
-            $this->_ParsedRequest['Path'] = $path;
-            $this->_ParsedRequest['Filename'] = $filename;
-            $this->_RequestArguments[self::INPUT_GET] = $get;
+            $this->_ParsedRequest['Path'] = $Path;
+            $this->_ParsedRequest['Filename'] = $Filename;
+            $this->_RequestArguments[self::INPUT_GET] = $Get;
         }
 
         // Construct the path and query.
-        $result = $this->path();
+        $Result = $this->path();
 
 //      $Filename = $this->Filename();
 //      if ($Filename && $Filename != 'default')
 //         $Result .= ConcatSep('/', $Result, $Filename);
-        $get = $this->getRequestArguments(self::INPUT_GET);
-        if (count($get) > 0) {
+        $Get = $this->getRequestArguments(self::INPUT_GET);
+        if (count($Get) > 0) {
             // mosullivan 2011-05-04 - There is a bug in this code that causes a qs
             // param to be present in the path, which makes appending with a ?
             // invalid. This code is too nasty to figure out. Kludge.
-            $result .= strpos($result, '?') === false ? '?' : '&';
-            $result .= http_build_query($get);
+            $Result .= strpos($Result, '?') === false ? '?' : '&';
+            $Result .= http_build_query($Get);
         }
 
-        return $result;
+        return $Result;
     }
 
     /**
      * Get a value from the post array or return the entire POST array.
      *
-     * @param string|null $key The key of the post item or null to return the entire array.
-     * @param mixed $default The value to return if the item isn't set.
+     * @param string|null $Key The key of the post item or null to return the entire array.
+     * @param mixed $Default The value to return if the item isn't set.
      * @return mixed
      */
-    public function post($key = null, $default = null) {
-        if ($key === null) {
+    public function post($Key = null, $Default = null) {
+        if ($Key === null) {
             return $this->getRequestArguments(self::INPUT_POST);
         } else {
-            return $this->getValueFrom(self::INPUT_POST, $key, $default);
+            return $this->getValueFrom(self::INPUT_POST, $Key, $Default);
         }
     }
 
     public function reset() {
-        $this->_Environment = [];
-        $this->_RequestArguments = [];
-        $this->_ParsedRequest = [
+        $this->_Environment = array();
+        $this->_RequestArguments = array();
+        $this->_ParsedRequest = array(
             'Path' => '',
             'OutputFormat' => 'default',
             'Filename' => 'default',
             'WebRoot' => '',
             'Domain' => ''
-        ];
+        );
         $this->_loadEnvironment();
     }
 
     /**
      * Get a value from the merged param array or return the entire merged array
      *
-     * @param string|null $key The key of the post item or null to return the entire array.
-     * @param mixed $default The value to return if the item isn't set.
+     * @param string|null $Key The key of the post item or null to return the entire array.
+     * @param mixed $Default The value to return if the item isn't set.
      * @return mixed
      */
-    public function merged($key = null, $default = null) {
-        $merged = [];
-        $queryOrder = [
+    public function merged($Key = null, $Default = null) {
+        $Merged = array();
+        $QueryOrder = array(
             self::INPUT_CUSTOM,
             self::INPUT_GET,
             self::INPUT_POST,
@@ -823,80 +807,80 @@ class Gdn_Request {
             self::INPUT_SERVER,
             self::INPUT_ENV,
             self::INPUT_COOKIES
-        ];
-        $numDataTypes = sizeof($queryOrder);
-        for ($i = $numDataTypes; $i > 0; $i--) {
-            $dataType = $queryOrder[$i - 1];
-            if (!array_key_exists($dataType, $this->_RequestArguments)) {
+        );
+        $NumDataTypes = sizeof($QueryOrder);
+        for ($i = $NumDataTypes; $i > 0; $i--) {
+            $DataType = $QueryOrder[$i - 1];
+            if (!array_key_exists($DataType, $this->_RequestArguments)) {
                 continue;
             }
-            $merged = array_merge($merged, $this->_RequestArguments[$dataType]);
+            $Merged = array_merge($Merged, $this->_RequestArguments[$DataType]);
         }
 
-        return (is_null($key)) ? $merged : val($key, $merged, $default);
+        return (is_null($Key)) ? $Merged : val($Key, $Merged, $Default);
     }
 
     /**
      * Attach an array of request arguments to the request.
      *
-     * @param int $paramsType type of data to import. One of the self::INPUT_* constants
-     * @param array $paramsData optional data array to import if ParamsType is INPUT_CUSTOM
+     * @param int $ParamsType type of data to import. One of the self::INPUT_* constants
+     * @param array $ParamsData optional data array to import if ParamsType is INPUT_CUSTOM
      * @return void
      */
-    protected function _setRequestArguments($paramsType, $paramsData = null) {
-        switch ($paramsType) {
+    protected function _setRequestArguments($ParamsType, $ParamsData = null) {
+        switch ($ParamsType) {
             case self::INPUT_GET:
-                $argumentData = $_GET;
+                $ArgumentData = $_GET;
                 break;
 
             case self::INPUT_POST:
-                $argumentData = $_POST;
+                $ArgumentData = $_POST;
                 break;
 
             case self::INPUT_SERVER:
-                $argumentData = $_SERVER;
+                $ArgumentData = $_SERVER;
                 break;
 
             case self::INPUT_FILES:
-                $argumentData = $_FILES;
+                $ArgumentData = $_FILES;
                 break;
 
             case self::INPUT_ENV:
-                $argumentData = $_ENV;
+                $ArgumentData = $_ENV;
                 break;
 
             case self::INPUT_COOKIES:
-                $argumentData = $_COOKIE;
+                $ArgumentData = $_COOKIE;
                 break;
 
             case self::INPUT_CUSTOM:
-                $argumentData = is_array($paramsData) ? $paramsData : [];
+                $ArgumentData = is_array($ParamsData) ? $ParamsData : array();
                 break;
 
         }
-        $this->_RequestArguments[$paramsType] = $argumentData;
+        $this->_RequestArguments[$ParamsType] = $ArgumentData;
     }
 
-    public function setRequestArguments($paramsType, $paramsData) {
-        $this->_RequestArguments[$paramsType] = $paramsData;
+    public function setRequestArguments($ParamsType, $ParamsData) {
+        $this->_RequestArguments[$ParamsType] = $ParamsData;
     }
 
-    public function setValueOn($paramType, $paramName, $paramValue) {
-        if (!isset($this->_RequestArguments[$paramType])) {
-            $this->_RequestArguments[$paramType] = [];
+    public function setValueOn($ParamType, $ParamName, $ParamValue) {
+        if (!isset($this->_RequestArguments[$ParamType])) {
+            $this->_RequestArguments[$ParamType] = array();
         }
 
-        $this->_RequestArguments[$paramType][$paramName] = $paramValue;
+        $this->_RequestArguments[$ParamType][$ParamName] = $ParamValue;
     }
 
     /**
      * Detach a dataset from the request
      *
-     * @param int $paramsType type of data to remove. One of the self::INPUT_* constants
+     * @param int $ParamsType type of data to remove. One of the self::INPUT_* constants
      * @return void
      */
-    public function _unsetRequestArguments($paramsType) {
-        unset($this->_RequestArguments[$paramsType]);
+    public function _unsetRequestArguments($ParamsType) {
+        unset($this->_RequestArguments[$ParamsType]);
     }
 
     /**
@@ -909,129 +893,129 @@ class Gdn_Request {
      *    - Default port, rewrites                     http://www.forum.com/
      *    - Custom port, rewrites                      http://www.forum.com:8080/index.php?/
      *
-     * @param sring $path of the controller method.
-     * @param mixed $withDomain Whether or not to include the domain with the url. This can take the following values.
+     * @param sring $Path of the controller method.
+     * @param mixed $WithDomain Whether or not to include the domain with the url. This can take the following values.
      * - true: Include the domain name.
      * - false: Do not include the domain. This is a relative path.
      * - //: Include the domain name, but use the // schemeless notation.
      * - /: Just return the path.
-     * @param bool $ssl set to true to implement SSL
+     * @param bool $SSL set to true to implement SSL
      * @return string
      *
      * @changes
      *    2.1   Added the // option to $WithDomain.
      *    2.2   Added the / option to $WithDomain.
      */
-    public function url($path = '', $withDomain = false, $ssl = null) {
-        static $allowSSL = null;
-        if ($allowSSL === null) {
-            $allowSSL = C('Garden.AllowSSL', false);
+    public function url($Path = '', $WithDomain = false, $SSL = null) {
+        static $AllowSSL = null;
+        if ($AllowSSL === null) {
+            $AllowSSL = C('Garden.AllowSSL', false);
         }
-        static $rewrite = null;
-        if ($rewrite === null) {
-            $rewrite = val('X_REWRITE', $_SERVER, C('Garden.RewriteUrls', false));
+        static $Rewrite = null;
+        if ($Rewrite === null) {
+            $Rewrite = val('X_REWRITE', $_SERVER, C('Garden.RewriteUrls', false));
         }
 
-        if (!$allowSSL) {
-            $ssl = null;
-        } elseif ($withDomain === 'https') {
-            $ssl = true;
-            $withDomain = true;
+        if (!$AllowSSL) {
+            $SSL = null;
+        } elseif ($WithDomain === 'https') {
+            $SSL = true;
+            $WithDomain = true;
         }
 
         // If we are explicitly setting ssl urls one way or another
-        if (!is_null($ssl)) {
+        if (!is_null($SSL)) {
             // Force the full domain in the url
-            $withDomain = true;
+            $WithDomain = true;
             // And make sure to use ssl or not
-            if ($ssl) {
-                $path = str_replace('http:', 'https:', $path);
-                $scheme = 'https';
+            if ($SSL) {
+                $Path = str_replace('http:', 'https:', $Path);
+                $Scheme = 'https';
             } else {
-                $path = str_replace('https:', 'http:', $path);
-                $scheme = 'http';
+                $Path = str_replace('https:', 'http:', $Path);
+                $Scheme = 'http';
             }
         } else {
-            $scheme = $this->scheme();
+            $Scheme = $this->scheme();
         }
-        if (substr($path, 0, 2) == '//' || in_array(strpos($path, '://'), [4, 5])) { // Accounts for http:// and https:// - some querystring params may have "://", and this would cause things to break.
-            return $path;
-        }
-
-        $parts = [];
-
-        $port = $this->port();
-        $host = $this->host();
-        if (!in_array($port, [80, 443]) && (strpos($host, ':'.$port) === false)) {
-            $host .= ':'.$port;
+        if (substr($Path, 0, 2) == '//' || in_array(strpos($Path, '://'), array(4, 5))) { // Accounts for http:// and https:// - some querystring params may have "://", and this would cause things to break.
+            return $Path;
         }
 
-        if ($withDomain === '//') {
-            $parts[] = '//'.$host;
-        } elseif ($withDomain && $withDomain !== '/') {
-            $parts[] = $scheme.'://'.$host;
+        $Parts = array();
+
+        $Port = $this->port();
+        $Host = $this->host();
+        if (!in_array($Port, array(80, 443)) && (strpos($Host, ':'.$Port) === false)) {
+            $Host .= ':'.$Port;
+        }
+
+        if ($WithDomain === '//') {
+            $Parts[] = '//'.$Host;
+        } elseif ($WithDomain && $WithDomain !== '/') {
+            $Parts[] = $Scheme.'://'.$Host;
         } else {
-            $parts[] = '';
+            $Parts[] = '';
         }
 
-        if ($withDomain !== '/' && $this->webRoot() != '') {
-            $parts[] = $this->webRoot();
+        if ($WithDomain !== '/' && $this->webRoot() != '') {
+            $Parts[] = $this->webRoot();
         }
 
         // Strip out the hash.
-        $hash = strchr($path, '#');
-        if (strlen($hash) > 0) {
-            $path = substr($path, 0, -strlen($hash));
+        $Hash = strchr($Path, '#');
+        if (strlen($Hash) > 0) {
+            $Path = substr($Path, 0, -strlen($Hash));
         }
 
         // Strip out the querystring.
-        $query = strrchr($path, '?');
-        if (strlen($query) > 0) {
-            $path = substr($path, 0, -strlen($query));
+        $Query = strrchr($Path, '?');
+        if (strlen($Query) > 0) {
+            $Path = substr($Path, 0, -strlen($Query));
         }
 
-        if (!$rewrite && $withDomain !== '/') {
-            $parts[] = $this->_environmentElement('Script').'?p=';
-            $query = str_replace('?', '&', $query);
+        if (!$Rewrite && $WithDomain !== '/') {
+            $Parts[] = $this->_environmentElement('Script').'?p=';
+            $Query = str_replace('?', '&', $Query);
         }
 
-        if ($path == '') {
-            $pathParts = explode('/', $this->path());
-            $pathParts = array_map('rawurlencode', $pathParts);
-            $path = implode('/', $pathParts);
+        if ($Path == '') {
+            $PathParts = explode('/', $this->path());
+            $PathParts = array_map('rawurlencode', $PathParts);
+            $Path = implode('/', $PathParts);
             // Grab the get parameters too.
-            if (!$query) {
-                $query = $this->getRequestArguments(self::INPUT_GET);
-                if (count($query) > 0) {
-                    $query = ($rewrite ? '?' : '&amp;').http_build_query($query);
+            if (!$Query) {
+                $Query = $this->getRequestArguments(self::INPUT_GET);
+                if (count($Query) > 0) {
+                    $Query = ($Rewrite ? '?' : '&amp;').http_build_query($Query);
                 } else {
-                    unset($query);
+                    unset($Query);
                 }
             }
         }
-        $parts[] = ltrim($path, '/');
+        $Parts[] = ltrim($Path, '/');
 
-        $result = implode('/', $parts);
+        $Result = implode('/', $Parts);
 
         // If we are explicitly setting ssl urls one way or another
-        if (!is_null($ssl)) {
+        if (!is_null($SSL)) {
             // And make sure to use ssl or not
-            if ($ssl) {
-                $result = str_replace('http:', 'https:', $result);
+            if ($SSL) {
+                $Result = str_replace('http:', 'https:', $Result);
             } else {
-                $result = str_replace('https:', 'http:', $result);
+                $Result = str_replace('https:', 'http:', $Result);
             }
         }
 
-        if (isset($query)) {
-            $result .= $query;
+        if (isset($Query)) {
+            $Result .= $Query;
         }
 
-        if (isset($hash)) {
-            $result .= $hash;
+        if (isset($Hash)) {
+            $Result .= $Hash;
         }
 
-        return $result;
+        return $Result;
     }
 
     /**
@@ -1045,15 +1029,16 @@ class Gdn_Request {
         $parts1 = parse_url($this->url($url1));
         $parts2 = parse_url($this->url($url2));
 
-        $defaults = [
+
+        $defaults = array(
             'scheme' => $this->scheme(),
             'host' => $this->hostAndPort(),
             'path' => '/',
             'query' => ''
-        ];
+        );
 
-        $parts1 = array_replace($defaults, $parts1 ?: []);
-        $parts2 = array_replace($defaults, $parts2 ?: []);
+        $parts1 = array_replace($defaults, $parts1 ?: array());
+        $parts2 = array_replace($defaults, $parts2 ?: array());
 
         if ($parts1['host'] === $parts2['host']
             && ltrim($parts1['path'], '/') === ltrim($parts2['path'], '/')
@@ -1106,18 +1091,18 @@ class Gdn_Request {
     /**
      * Gets/Sets the relative path to the application's dispatcher.
      *
-     * @param string? $webRoot The new web root to set.
+     * @param $WebRoot Optional Webroot to set
      * @return string
      */
-    public function webRoot($webRoot = null) {
-        $path = (string)$this->_parsedRequestElement('WebRoot', $webRoot);
-        $webRootFromConfig = $this->_environmentElement('ConfigWebRoot');
+    public function webRoot($WebRoot = null) {
+        $Path = (string)$this->_parsedRequestElement('WebRoot', $WebRoot);
+        $WebRootFromConfig = $this->_environmentElement('ConfigWebRoot');
 
-        $removeWebRootConfig = $this->_environmentElement('ConfigStripUrls');
-        if ($webRootFromConfig && $removeWebRootConfig) {
-            $path = str_replace($webRootFromConfig, '', $path);
+        $RemoveWebRootConfig = $this->_environmentElement('ConfigStripUrls');
+        if ($WebRootFromConfig && $RemoveWebRootConfig) {
+            $Path = str_replace($WebRootFromConfig, '', $Path);
         }
-        return $path;
+        return $Path;
     }
 
     /**
@@ -1133,10 +1118,10 @@ class Gdn_Request {
      * @return Gdn_Request
      */
     public function withArgs() {
-        $argAliasList = func_get_args();
-        if (count($argAliasList)) {
-            foreach ($argAliasList as $argAlias) {
-                $this->_setRequestArguments(strtolower($argAlias));
+        $ArgAliasList = func_get_args();
+        if (count($ArgAliasList)) {
+            foreach ($ArgAliasList as $ArgAlias) {
+                $this->_setRequestArguments(strtolower($ArgAlias));
             }
         }
 
@@ -1150,52 +1135,52 @@ class Gdn_Request {
      * itself) to be attached in front of the other request superglobals and transparently override
      * their values when they are requested via val(). This method sets that data.
      *
-     * @param $customArgs key/value array of custom request argument data.
+     * @param $CustomArgs key/value array of custom request argument data.
      * @flow chain
      * @return Gdn_Request
      */
-    public function withCustomArgs($customArgs) {
-        $this->_setRequestArguments(self::INPUT_CUSTOM, $customArgs);
+    public function withCustomArgs($CustomArgs) {
+        $this->_setRequestArguments(self::INPUT_CUSTOM, $CustomArgs);
         return $this;
     }
 
     /**
      * Chainable URI Setter, source is a controller + method + args list
      *
-     * @param $controller Gdn_Controller Object or string controller name.
-     * @param $method Optional name of the method to call. Omit or NULL for default (Index).
-     * @param $args Optional argument list to forward to the method. Omit for none.
+     * @param $Controller Gdn_Controller Object or string controller name.
+     * @param $Method Optional name of the method to call. Omit or NULL for default (Index).
+     * @param $Args Optional argument list to forward to the method. Omit for none.
      * @flow chain
      * @return Gdn_Request
      */
-    public function withControllerMethod($controller, $method = null, $args = []) {
-        if (is_a($controller, 'Gdn_Controller')) {
+    public function withControllerMethod($Controller, $Method = null, $Args = array()) {
+        if (is_a($Controller, 'Gdn_Controller')) {
             // Convert object to string
-            $matches = [];
-            preg_match('/^(.*)Controller$/', get_class($controller), $matches);
-            $controller = $matches[1];
+            $Matches = array();
+            preg_match('/^(.*)Controller$/', get_class($Controller), $Matches);
+            $Controller = $Matches[1];
         }
 
-        $method = is_null($method) ? 'index' : $method;
-        $path = trim(implode('/', array_merge([$controller, $method], $args)), '/');
-        $this->_environmentElement('URI', $path);
+        $Method = is_null($Method) ? 'index' : $Method;
+        $Path = trim(implode('/', array_merge(array($Controller, $Method), $Args)), '/');
+        $this->_environmentElement('URI', $Path);
         return $this;
     }
 
-    public function withDeliveryType($deliveryType) {
-        $this->setValueOn(self::INPUT_GET, 'DeliveryType', $deliveryType);
+    public function withDeliveryType($DeliveryType) {
+        $this->setValueOn(self::INPUT_GET, 'DeliveryType', $DeliveryType);
         return $this;
     }
 
-    public function withDeliveryMethod($deliveryMethod) {
-        $this->setValueOn(self::INPUT_GET, 'DeliveryMethod', $deliveryMethod);
+    public function withDeliveryMethod($DeliveryMethod) {
+        $this->setValueOn(self::INPUT_GET, 'DeliveryMethod', $DeliveryMethod);
         return $this;
     }
 
-    public function withRoute($route) {
-        $parsedURI = Gdn::router()->getDestination($route);
-        if ($parsedURI) {
-            $this->_environmentElement('URI', $parsedURI);
+    public function withRoute($Route) {
+        $ParsedURI = Gdn::router()->getDestination($Route);
+        if ($ParsedURI) {
+            $this->_environmentElement('URI', $ParsedURI);
         }
         return $this;
     }
@@ -1203,12 +1188,12 @@ class Gdn_Request {
     /**
      * Chainable URI Setter, source is a simple string
      *
-     * @param $uri optional URI to set as as replacement for the REQUEST_URI superglobal value
+     * @param $URI optional URI to set as as replacement for the REQUEST_URI superglobal value
      * @flow chain
      * @return Gdn_Request
      */
-    public function withURI($uri = null) {
-        $this->_environmentElement('URI', $uri);
+    public function withURI($URI = null) {
+        $this->_environmentElement('URI', $URI);
         return $this;
     }
 }

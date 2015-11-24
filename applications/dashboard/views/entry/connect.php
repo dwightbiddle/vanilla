@@ -10,7 +10,7 @@ if (!$ConnectPhoto) {
 $ConnectSource = $this->Form->getFormValue('ProviderName');
 ?>
 <div class="Connect">
-    <h1><?php echo stringIsNullOrEmpty($ConnectSource) ? t("Sign In") : sprintf(t('%s Connect'), $ConnectSource); ?></h1>
+    <h1><?php echo stringIsNullOrEmpty($ConnectSource) ? t("Sign in") : sprintf(t('%s Connect'), $ConnectSource); ?></h1>
 
     <div>
         <?php
@@ -71,29 +71,27 @@ $ConnectSource = $this->Form->getFormValue('ProviderName');
                 <?php endif; ?>
                 <li>
                     <?php
-                      if (!$this->Form->getFormValue('ConnectName')) {
-                          if (count($ExistingUsers) == 1 && $NoConnectName) {
-                              $PasswordMessage = t('ConnectExistingPassword', 'Enter your existing account password.');
-                              $Row = reset($ExistingUsers);
-			                        echo '<div class="FinePrint">', t('ConnectAccountExists', 'You already have an account here.'), '</div>',
-                              wrap(sprintf(t('ConnectRegisteredName', 'Your registered username: <strong>%s</strong>'), htmlspecialchars($Row['Name'])), 'div', array('class' => 'ExistingUsername'));
-                              $this->addDefinition('NoConnectName', true);
-                              echo $this->Form->Hidden('UserSelect', array('Value' => $Row['UserID']));
-                          } else {
-                              echo $this->Form->label('Username', 'ConnectName');
-                              echo '<div class="FinePrint">', t('ConnectChooseName', 'Choose a name to identify yourself on the site.'), '</div>';
-      
-                              if (count($ExistingUsers) > 0) {
-                                  foreach ($ExistingUsers as $Row) {
-                                      echo wrap($this->Form->Radio('UserSelect', $Row['Name'], array('value' => $Row['UserID'])), 'div');
-                                  }
-                                  echo wrap($this->Form->Radio('UserSelect', t('Other'), array('value' => 'other')), 'div');
-                              }
-                          }
-      
-                          if (!$NoConnectName)
-                              echo $this->Form->Textbox('ConnectName');
-                       }
+                    if (count($ExistingUsers) == 1 && $NoConnectName) {
+                        $PasswordMessage = t('ConnectExistingPassword', 'Enter your existing account password.');
+                        $Row = reset($ExistingUsers);
+                        echo '<div class="FinePrint">', t('ConnectAccountExists', 'You already have an account here.'), '</div>',
+                        wrap(sprintf(t('ConnectRegisteredName', 'Your registered username: <strong>%s</strong>'), htmlspecialchars($Row['Name'])), 'div', array('class' => 'ExistingUsername'));
+                        $this->addDefinition('NoConnectName', true);
+                        echo $this->Form->Hidden('UserSelect', array('Value' => $Row['UserID']));
+                    } else {
+                        echo $this->Form->label('Username', 'ConnectName');
+                        echo '<div class="FinePrint">', t('ConnectChooseName', 'Choose a name to identify yourself on the site.'), '</div>';
+
+                        if (count($ExistingUsers) > 0) {
+                            foreach ($ExistingUsers as $Row) {
+                                echo wrap($this->Form->Radio('UserSelect', $Row['Name'], array('value' => $Row['UserID'])), 'div');
+                            }
+                            echo wrap($this->Form->Radio('UserSelect', t('Other'), array('value' => 'other')), 'div');
+                        }
+                    }
+
+                    if (!$NoConnectName)
+                        echo $this->Form->Textbox('ConnectName');
                     ?>
                 </li>
                 <?php $this->fireEvent('RegisterBeforePassword'); ?>

@@ -15,7 +15,7 @@ if (!isset($Drop)) {
 }
 
 if (!isset($Explicit)) {
-    $Explicit = false;
+    $Explicit = true;
 }
 
 $Database = Gdn::database();
@@ -87,12 +87,12 @@ $Construct
     ->column('DateOfBirth', 'datetime', true)
     ->column('DateFirstVisit', 'datetime', true)
     ->column('DateLastActive', 'datetime', true, 'index')
-    ->column('LastIPAddress', 'ipaddress', true)
+    ->column('LastIPAddress', 'varchar(15)', true)
     ->column('AllIPAddresses', 'varchar(100)', true)
     ->column('DateInserted', 'datetime', false, 'index')
-    ->column('InsertIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
     ->column('DateUpdated', 'datetime', true)
-    ->column('UpdateIPAddress', 'ipaddress', true)
+    ->column('UpdateIPAddress', 'varchar(15)', true)
     ->column('HourOffset', 'int', '0')
     ->column('Score', 'float', null)
     ->column('Admin', 'tinyint(1)', '0')
@@ -105,8 +105,9 @@ $Construct
 
 // Modify all users with ConfirmEmail role to be unconfirmed
 if ($UserExists && !$ConfirmedExists) {
+    $ConfirmEmail = c('Garden.Registration.ConfirmEmail', false);
     $ConfirmEmailRoleID = RoleModel::getDefaultRoles(RoleModel::TYPE_UNCONFIRMED);
-    if (UserModel::requireConfirmEmail() && !empty($ConfirmEmailRoleID)) {
+    if ($ConfirmEmail && !empty($ConfirmEmailRoleID)) {
         // Select unconfirmed users
         $Users = Gdn::sql()->select('UserID')->from('UserRole')->where('RoleID', $ConfirmEmailRoleID)->get();
         $UserIDs = array();
@@ -333,6 +334,18 @@ $PermissionModel->undefine(array(
     'Garden.Messages.Manage'
 ));
 
+//// Photo Table
+//$Construct->table('Photo');
+//
+//$PhotoTableExists = $Construct->TableExists('Photo');
+//
+//$Construct
+//	->PrimaryKey('PhotoID')
+//   ->column('Name', 'varchar(255)')
+//   ->column('InsertUserID', 'int', TRUE, 'key')
+//   ->column('DateInserted', 'datetime')
+//   ->set($Explicit, $Drop);
+
 // Invitation Table
 $Construct->table('Invitation')
     ->primaryKey('InvitationID')
@@ -346,7 +359,7 @@ $Construct->table('Invitation')
     ->column('DateExpires', 'datetime', true)
     ->set($Explicit, $Drop);
 
-// Fix negative invitation expiry dates.
+// Fix negative invitation expiry dates..
 $InviteExpiry = c('Garden.Registration.InviteExpiration');
 if ($InviteExpiry && substr($InviteExpiry, 0, 1) === '-') {
     $InviteExpiry = substr($InviteExpiry, 1);
@@ -399,7 +412,7 @@ $Construct
 //   ->column('CountComments', 'int', '0')
     ->column('InsertUserID', 'int', true, 'key')
     ->column('DateInserted', 'datetime')
-    ->column('InsertIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
     ->column('DateUpdated', 'datetime', !$DateUpdatedExists, array('index', 'index.Recent', 'index.Feed'))
     ->column('Notified', 'tinyint(1)', 0, 'index.Notify')
     ->column('Emailed', 'tinyint(1)', 0)
@@ -460,7 +473,7 @@ $Construct
     ->column('Format', 'varchar(20)')
     ->column('InsertUserID', 'int')
     ->column('DateInserted', 'datetime')
-    ->column('InsertIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
     ->set($Explicit, $Drop);
 
 // Move activity comments to the activity comment table.
@@ -643,10 +656,10 @@ $Construct->table('Log')
     ->column('RecordID', 'int', null, 'index')
     ->column('RecordUserID', 'int', null, 'index')// user responsible for the record; indexed for user deletion
     ->column('RecordDate', 'datetime')
-    ->column('RecordIPAddress', 'ipaddress', null, 'index')
+    ->column('RecordIPAddress', 'varchar(15)', null, 'index')
     ->column('InsertUserID', 'int')// user that put record in the log
     ->column('DateInserted', 'datetime', false, 'index')// date item added to log
-    ->column('InsertIPAddress', 'ipaddress', null)
+    ->column('InsertIPAddress', 'varchar(15)', null)
     ->column('OtherUserIDs', 'varchar(255)', null)
     ->column('DateUpdated', 'datetime', null)
     ->column('ParentRecordID', 'int', null, 'index')
@@ -681,10 +694,10 @@ $Construct->table('Ban')
     ->column('CountBlockedRegistrations', 'uint', 0)
     ->column('InsertUserID', 'int')
     ->column('DateInserted', 'datetime')
-    ->column('InsertIPAddress', 'ipaddress', true)
+    ->column('InsertIPAddress', 'varchar(15)', true)
     ->column('UpdateUserID', 'int', true)
     ->column('DateUpdated', 'datetime', true)
-    ->column('UpdateIPAddress', 'ipaddress', true)
+    ->column('UpdateIPAddress', 'varchar(15)', true)
     ->engine('InnoDB')
     ->set($Explicit, $Drop);
 
@@ -748,10 +761,10 @@ $Construct
     ->column('Attributes', 'text', true)
     ->column('DateInserted', 'datetime')
     ->column('InsertUserID', 'int', false, 'key')
-    ->column('InsertIPAddress', 'ipaddress')
+    ->column('InsertIPAddress', 'varchar(64)')
     ->column('DateUpdated', 'datetime', true)
     ->column('UpdateUserID', 'int', true)
-    ->column('UpdateIPAddress', 'ipaddress', true)
+    ->column('UpdateIPAddress', 'varchar(15)', true)
     ->set($Explicit, $Drop);
 
 // Save the current input formatter to the user's config.

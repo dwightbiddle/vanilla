@@ -145,7 +145,7 @@ class Gdn_Filecache extends Gdn_Cache {
 
         $Flags = ($Flags & Gdn_Filecache::O_CREATE) ? Gdn_FileSystem::O_CREATE | Gdn_FileSystem::O_WRITE : 0;
         $CacheLocationOK = Gdn_FileSystem::checkFolderR($SplitCacheLocation, $Flags);
-        if (!$CacheLocationOK && ($Flags & Gdn_Filecache::O_CREATE)) {
+        if (!$CacheLocationOK) {
             return $this->failure("Computed cache folder '{$SplitCacheLocation}' could not be found, or created.");
         }
 

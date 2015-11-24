@@ -175,26 +175,12 @@ class UserController extends DashboardController {
                 // this themselves
                 $this->Form->setFormValue('RoleID', array_keys($UserNewRoles));
 
-                $noPassword = (bool)$this->Form->getFormValue('NoPassword');
-                if ($noPassword) {
-                    $this->Form->setFormValue('Password', betterRandomString(15, 'Aa0'));
-                    $this->Form->setFormValue('HashMethod', 'Random');
-                }
-
                 $NewUserID = $this->Form->save(array('SaveRoles' => true, 'NoConfirmEmail' => true));
                 if ($NewUserID !== false) {
-                    if ($noPassword) {
-                        $password = T('No password');
-                    } else {
-                        $password = $this->Form->getValue('Password', '');
-                    }
-
-                    $UserModel->sendWelcomeEmail($NewUserID, $password, 'Add');
+                    $Password = $this->Form->getValue('Password', '');
+                    $UserModel->sendWelcomeEmail($NewUserID, $Password, 'Add');
                     $this->informMessage(t('The user has been created successfully'));
                     $this->RedirectUrl = url('dashboard/user');
-                } elseif ($noPassword) {
-                    $this->Form->setFormValue('Password', '');
-                    $this->Form->setFormValue('HashMethod', '');
                 }
 
                 $this->UserRoleData = $UserNewRoles;
@@ -349,7 +335,6 @@ class UserController extends DashboardController {
 
     /**
      * Ban a user and optionally delete their content.
-     *
      * @since 2.1
      * @param type $UserID
      */
@@ -934,7 +919,7 @@ class UserController extends DashboardController {
      */
     public function save() {
         $this->permission('Garden.Users.Edit');
-        if (!Gdn::request()->isAuthenticatedPostBack()) {
+        if (!Gdn::request()->isPostBack()) {
             throw new Exception('Requires POST', 405);
         }
 
@@ -1009,7 +994,7 @@ class UserController extends DashboardController {
 
         $Form = new Gdn_Form();
 
-        if ($this->Request->isAuthenticatedPostBack()) {
+        if ($this->Request->isPostBack()) {
             // Make sure everything has been posted.
             $Form->validateRule('ClientID', 'ValidateRequired');
             $Form->validateRule('UniqueID', 'ValidateRequired');
@@ -1086,16 +1071,14 @@ class UserController extends DashboardController {
     }
 
     /**
-     * JSON output of a username search.
      *
-     * @param string $query
+     *
+     * @param $q
      * @param int $limit
      */
     public function tagSearch($q, $limit = 10) {
-        $data = Gdn::userModel()->tagSearch($q, $limit);
-        $this->contentType('application/json; charset='.c('Garden.Charset', 'utf-8'));
-        $this->sendHeaders();
-        die(json_encode($data));
+        $Data = Gdn::userModel()->tagSearch($q, $limit);
+        die(json_encode($Data));
     }
 
     /**

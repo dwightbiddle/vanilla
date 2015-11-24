@@ -8,12 +8,12 @@
  * @since 2.0
  */
 
-if (PHP_VERSION_ID < 50400) {
-    die("Vanilla requires PHP 5.4 or greater.");
+if (PHP_VERSION_ID < 50300) {
+    die("Vanilla requires PHP 5.3 or greater.");
 }
 
 define('APPLICATION', 'Vanilla');
-define('APPLICATION_VERSION', '2.2.101.3');
+define('APPLICATION_VERSION', '2.2rc1');
 
 // Report and track all errors.
 error_reporting(E_ERROR | E_PARSE | E_CORE_ERROR | E_COMPILE_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR);
@@ -35,9 +35,9 @@ require_once(PATH_ROOT.'/bootstrap.php');
 
 $Dispatcher = Gdn::dispatcher();
 
-$EnabledApplications = Gdn::applicationManager()->enabledApplicationFolders();
-$Dispatcher->enabledApplicationFolders($EnabledApplications);
-$Dispatcher->passProperty('EnabledApplications', $EnabledApplications);
+$EnabledApplications = Gdn::ApplicationManager()->EnabledApplicationFolders();
+$Dispatcher->EnabledApplicationFolders($EnabledApplications);
+$Dispatcher->PassProperty('EnabledApplications', $EnabledApplications);
 
 // Process the request.
 $Dispatcher->start();

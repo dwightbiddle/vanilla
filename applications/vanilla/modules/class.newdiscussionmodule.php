@@ -32,7 +32,7 @@ class NewDiscussionModule extends Gdn_Module {
     public $ShowGuests = false;
 
     /** @var string Where to send users without permission when $SkipPermissions is enabled. */
-    public $GuestUrl = '/entry/signin';
+    public $GuestUrl = '/entry/register';
 
     /**
      * Set default button.
@@ -81,7 +81,7 @@ class NewDiscussionModule extends Gdn_Module {
         Gdn::controller()->fireEvent('BeforeNewDiscussionButton');
 
         // Make sure the user has the most basic of permissions first.
-        $PermissionCategory = CategoryModel::permissionCategory($this->CategoryID);
+        $PermissionCategory = CategoryModel::PermissionCategory($this->CategoryID);
         if ($this->CategoryID) {
             $Category = CategoryModel::categories($this->CategoryID);
             $HasPermission = Gdn::session()->checkPermission('Vanilla.Discussions.Add', true, 'Category', val('CategoryID', $PermissionCategory));
@@ -98,7 +98,7 @@ class NewDiscussionModule extends Gdn_Module {
         }
 
         // Grab the allowed discussion types.
-        $DiscussionTypes = CategoryModel::allowedDiscussionTypes($PermissionCategory);
+        $DiscussionTypes = CategoryModel::AllowedDiscussionTypes($PermissionCategory);
 
         foreach ($DiscussionTypes as $Key => $Type) {
             if (isset($Type['AddPermission']) && !Gdn::session()->checkPermission($Type['AddPermission'])) {
@@ -106,21 +106,17 @@ class NewDiscussionModule extends Gdn_Module {
                 continue;
             }
 
-            $Url = val('AddUrl', $Type);
+            // If user !$HasPermission, they are $PrivilegedGuest so redirect to $GuestUrl.
+            $Url = ($HasPermission) ? val('AddUrl', $Type) : $this->GuestUrl;
             if (!$Url) {
                 continue;
             }
 
-            if (isset($Category)) {
+            if (isset($Category) && $HasPermission) {
                 $Url .= '/'.rawurlencode(val('UrlCode', $Category));
             }
 
-            // Present a signin redirect for a $PrivilegedGuest.
-            if (!$HasPermission) {
-                $Url = $this->GuestUrl . '?Target=' . $Url;
-            }
-
-            $this->addButton(t(val('AddText', $Type)), $Url);
+            $this->AddButton(t(val('AddText', $Type)), $Url);
         }
 
         // Add QueryString to URL if one is defined.
@@ -130,6 +126,6 @@ class NewDiscussionModule extends Gdn_Module {
             }
         }
 
-        return parent::toString();
+        return parent::ToString();
     }
 }

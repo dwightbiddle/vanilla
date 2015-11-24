@@ -183,33 +183,10 @@ class Gdn_Form extends Gdn_Pluggable {
         $Return = '<input type="'.$Type.'"';
         $Return .= $this->_idAttribute($ButtonCode, $Attributes);
         $Return .= $this->_nameAttribute($ButtonCode, $Attributes);
-        $Return .= ' value="'.t($ButtonCode, val('value', $Attributes)).'"';
+        $Return .= ' value="'.t($ButtonCode, arrayValue('value', $Attributes)).'"';
         $Return .= $this->_attributesToString($Attributes);
         $Return .= " />\n";
         return $Return;
-    }
-
-    /**
-     * Builds a color-picker form element. Accepts three-character hex values with or without the leading '#',
-     * but the saved value will be coerced into a six-character hex code with the leading '#'.
-     * The hex value to be saved is the value of the input with the color-picker-value class.
-     *
-     * @param string $fieldName Name of the field being posted with this input.
-     * @return string The form element for a color picker.
-     */
-    public function color($fieldName) {
-        Gdn::controller()->addJsFile('colorpicker.js');
-
-        $valueAttributes['class'] = 'js-color-picker-value color-picker-value InputBox Hidden';
-        $textAttributes['class'] = 'js-color-picker-text color-picker-text InputBox';
-        $colorAttributes['class'] = 'js-color-picker-color color-picker-color';
-
-        return '<div id="'.$this->escapeString($fieldName).'" class="js-color-picker color-picker input-group">'
-        .$this->input($fieldName, 'text', $valueAttributes)
-        .$this->input($fieldName.'-text', 'text', $textAttributes)
-        .'<span class="js-color-picker-preview color-picker-preview"></span>'
-        .$this->input($fieldName.'-color', 'color', $colorAttributes)
-        .'</div>';
     }
 
     /**
@@ -243,23 +220,14 @@ class Gdn_Form extends Gdn_Pluggable {
     /**
      * Returns Captcha HTML & adds translations to document head.
      *
-     * Events: BeforeCaptcha
-     * 
      * @return string
      */
     public function captcha() {
-        $handled = false;
-        $this->EventArguments['Handled'] =& $handled;
-        $this->fireEvent('Captcha');
-        if ($handled) {
-            // A plugin handled the captcha so don't display anything more.
-            return;
-        }
         // Google whitelist
-        $whitelist = array('ar', 'bg', 'ca', 'zh-CN', 'zh-TW', 'hr', 'cs', 'da', 'nl', 'en-GB', 'en', 'fil', 'fi', 'fr', 'fr-CA', 'de', 'de-AT', 'de-CH', 'el', 'iw', 'hi', 'hu', 'id', 'it', 'ja', 'ko', 'lv', 'lt', 'no', 'fa', 'pl', 'pt', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sr', 'sk', 'sl', 'es', 'es-419', 'sv', 'th', 'tr', 'uk', 'vi');
+        $Whitelist = array('ar', 'bg', 'ca', 'zh-CN', 'zh-TW', 'hr', 'cs', 'da', 'nl', 'en-GB', 'en', 'fil', 'fi', 'fr', 'fr-CA', 'de', 'de-AT', 'de-CH', 'el', 'iw', 'hi', 'hu', 'id', 'it', 'ja', 'ko', 'lv', 'lt', 'no', 'fa', 'pl', 'pt', 'pt-BR', 'pt-PT', 'ro', 'ru', 'sr', 'sk', 'sl', 'es', 'es-419', 'sv', 'th', 'tr', 'uk', 'vi');
 
         // reCAPTCHA Options
-        $options = array(
+        $Options = array(
             'custom_translations' => array(
                 'instructions_visual' => t("Type the text:"),
                 'instructions_audio' => t("Type what you hear:"),
@@ -274,15 +242,16 @@ class Gdn_Form extends Gdn_Pluggable {
         );
 
         // Use our current locale against the whitelist.
-        $language = Gdn::locale()->language();
-        if (in_array($language, $whitelist)) {
-            $options['lang'] = $language;
-        } elseif (in_array(Gdn::locale()->Locale, $whitelist)) {
-            $options['lang'] = Gdn::locale()->Locale;
+        $Language = Gdn::locale()->language();
+        if (!in_array($Language, $Whitelist)) {
+            $Language = (in_array(Gdn::locale()->Locale, $Whitelist)) ? Gdn::locale()->Locale : false;
+        }
+        if ($Language) {
+            $Options['lang'] = $Language;
         }
 
         // Add custom translation strings as JSON.
-        Gdn::controller()->Head->addString('<script type="text/javascript">var RecaptchaOptions = '.json_encode($options).';</script>');
+        Gdn::controller()->Head->addString('<script type="text/javascript">var RecaptchaOptions = '.json_encode($Options).';</script>');
 
         require_once PATH_LIBRARY.'/vendors/recaptcha/functions.recaptchalib.php';
 
@@ -399,9 +368,7 @@ class Gdn_Form extends Gdn_Pluggable {
                 }
 
                 if ($Category['AllowDiscussions']) {
-                    if($Permission == 'add' && !$Category['PermsDiscussionsAdd']) {
-                        $Disabled = true;
-                    }
+                    $Disabled &= $Permission == 'add' && !$Category['PermsDiscussionsAdd'];
                 }
 
                 $Return .= '<option value="'.$CategoryID.'"';
@@ -849,9 +816,9 @@ class Gdn_Form extends Gdn_Pluggable {
                 $EndYear = substr($YearRange, 5);
             }
         }
-        if ($YearRange === false) {
-            $StartYear = date('Y');
-            $EndYear = 1900;
+        if ($YearRange === false || $StartYear > $EndYear) {
+            $StartYear = 1900;
+            $EndYear = date('Y');
         }
 
         $Months = array_map(
@@ -867,8 +834,8 @@ class Gdn_Form extends Gdn_Pluggable {
 
         $Years = array();
         $Years[0] = T('Year');
-        foreach (range($StartYear, $EndYear) as $Year) {
-            $Years[$Year] = $Year;
+        for ($i = $StartYear; $i <= $EndYear; ++$i) {
+            $Years[$i] = $i;
         }
 
         // Show inline errors?
@@ -1119,7 +1086,7 @@ class Gdn_Form extends Gdn_Pluggable {
                 $Count = count($Problems);
                 for ($i = 0; $i < $Count; ++$i) {
                     if (substr($Problems[$i], 0, 1) == '@') {
-                        $Return .= "<li>".substr($Problems[$i], 1)."</li>\n";
+                        $Return .= '<li>'.substr($Problems[$i], 1)."</li>\n";
                     } else {
                         $Return .= '<li>'.sprintf(
                             t($Problems[$i]),
@@ -1768,7 +1735,7 @@ PASSWORDMETER;
         if (is_string($Error)) {
             $ErrorCode = $Error;
         } elseif (is_a($Error, 'Gdn_UserException')) {
-            $ErrorCode = '@'.htmlspecialchars($Error->getMessage());
+            $ErrorCode = '@'.$Error->getMessage();
         } elseif (is_a($Error, 'Exception')) {
             // Strip the extra information out of the exception.
             $Parts = explode('|', $Error->getMessage());
@@ -1833,37 +1800,43 @@ PASSWORDMETER;
     }
 
     /**
-     * Returns a boolean value indicating if the current page has an authenticated postback.
+     * Returns a boolean value indicating if the current page has an
+     * authenticated postback. It validates the postback by looking at a
+     * transient value that was rendered using $this->Open() and submitted with
+     * the form. Ref: http://en.wikipedia.org/wiki/Cross-site_request_forgery
      *
-     * It validates the postback by looking at a transient value that was rendered using $this->Open()
-     * and submitted with the form. Ref: http://en.wikipedia.org/wiki/Cross-site_request_forgery
-     *
-     * @param bool $throw Whether or not to throw an exception if this is a postback AND the transient key doesn't validate.
-     * @return bool Returns true if the postback could be authenticated or false otherwise.
-     * @throws Gdn_UserException Throws an exception when this is a postback AND the transient key doesn't validate.
+     * @return bool
      */
-    public function authenticatedPostBack($throw = false) {
-        $keyName = $this->escapeFieldName('TransientKey');
-        $postBackKey = Gdn::request()->getValueFrom(Gdn_Request::INPUT_POST, $keyName, false);
+    public function authenticatedPostBack() {
+        // Commenting this out because, technically, a get request is not a "postback".
+        // And since I typically use AuthenticatedPostBack to validate that a form has
+        // been posted back a get request should not be considered an authenticated postback.
+        //if ($this->Method == "get") {
+        // forms sent with "get" method do not require authentication.
+        //   return TRUE;
+        //} else {
+        $KeyName = $this->escapeFieldName('TransientKey');
+        $PostBackKey = Gdn::request()->getValueFrom(Gdn_Request::INPUT_POST, $KeyName, false);
 
         // If this isn't a postback then return false if there isn't a transient key.
-        if (!$postBackKey && !Gdn::request()->isPostBack()) {
+        if (!$PostBackKey && !Gdn::request()->isPostBack()) {
             return false;
         }
 
-        $result = Gdn::session()->validateTransientKey($postBackKey);
-
-        if (!$result && $throw && Gdn::request()->isPostBack()) {
-            throw new Gdn_UserException('The CSRF token is invalid.', 403);
-        }
-
-        return $result;
+        // DEBUG:
+        //$Result .= '<div>KeyName: '.$KeyName.'</div>';
+        //echo '<div>PostBackKey: '.$PostBackKey.'</div>';
+        //echo '<div>TransientKey: '.$Session->TransientKey().'</div>';
+        //echo '<div>AuthenticatedPostBack: ' . ($Session->ValidateTransientKey($PostBackKey) ? 'Yes' : 'No');
+        //die();
+        return Gdn::session()->validateTransientKey($PostBackKey);
+        //}
     }
 
     /**
      * Checks $this->FormValues() to see if the specified button translation
      * code was submitted with the form (helps figuring out what button was
-     * pressed to submit the form when there is more than one button available).
+     *  pressed to submit the form when there is more than one button available).
      *
      * @param string $ButtonCode The translation code of the button to check for.
      * @return boolean
@@ -1992,6 +1965,8 @@ PASSWORDMETER;
             return;
         }
 
+        $MagicQuotes = get_magic_quotes_gpc();
+
         if (!is_array($this->_FormValues)) {
             $TableName = $this->InputPrefix;
             if (strlen($TableName) > 0) {
@@ -2007,6 +1982,16 @@ PASSWORDMETER;
                 $FieldName = substr($Field, $TableNameLength);
                 $FieldName = $this->_unescapeString($FieldName);
                 if (substr($Field, 0, $TableNameLength) == $TableName) {
+                    if ($MagicQuotes) {
+                        if (is_array($Value)) {
+                            foreach ($Value as $i => $v) {
+                                $Value[$i] = stripcslashes($v);
+                            }
+                        } else {
+                            $Value = stripcslashes($Value);
+                        }
+                    }
+
                     $this->_FormValues[$FieldName] = $Value;
                 }
             }
@@ -2042,20 +2027,20 @@ PASSWORDMETER;
                         ) ===
                             false
                         ) { // Saving dates in the format: YYYY-MM-DD
-                            $Year = val(
+                            $Year = arrayValue(
                                 $DateFields[$i].
                                 '_Year',
                                 $this->_FormValues,
                                 0
                             );
                         }
-                        $Month = val(
+                        $Month = arrayValue(
                             $DateFields[$i].
                             '_Month',
                             $this->_FormValues,
                             0
                         );
-                        $Day = val(
+                        $Day = arrayValue(
                             $DateFields[$i].
                             '_Day',
                             $this->_FormValues,
@@ -2107,7 +2092,7 @@ PASSWORDMETER;
      * @return unknown
      */
     public function getFormValue($FieldName, $Default = '') {
-        return val($FieldName, $this->formValues(), $Default);
+        return arrayValue($FieldName, $this->formValues(), $Default);
     }
 
     /**
@@ -2129,7 +2114,7 @@ PASSWORDMETER;
         if ($this->isMyPostBack()) {
             $Return = $this->getFormValue($FieldName, $Default);
         } else {
-            $Return = val($FieldName, $this->_DataArray, $Default);
+            $Return = arrayValue($FieldName, $this->_DataArray, $Default);
         }
         return $Return;
     }

@@ -581,19 +581,16 @@ class Gdn_DataSet implements IteratorAggregate, Countable {
      * @param array $Resultset The array of arrays or objects that represent the data to be traversed.
      */
     public function importDataset($Resultset) {
-        if (is_array($Resultset)) {
-            if (array_key_exists(0, $Resultset)) {
-                $FirstRow = $Resultset[0];
-
-                if (is_array($FirstRow)) {
-                    $this->_DatasetType = DATASET_TYPE_ARRAY;
-                } else {
-                    $this->_DatasetType = DATASET_TYPE_OBJECT;
-                }
-            }
-
+        if (is_array($Resultset) && array_key_exists(0, $Resultset)) {
             $this->_Cursor = -1;
             $this->_PDOStatement = null;
+            $FirstRow = $Resultset[0];
+
+            if (is_array($FirstRow)) {
+                $this->_DatasetType = DATASET_TYPE_ARRAY;
+            } else {
+                $this->_DatasetType = DATASET_TYPE_OBJECT;
+            }
             $this->_Result = $Resultset;
         }
     }
