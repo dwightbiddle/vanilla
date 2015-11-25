@@ -99,15 +99,22 @@ class VotingPlugin extends Gdn_Plugin {
 			, 'div', array('class' => 'StatBox ViewsBox'));
 
 		// Votes
-		if ($Session->IsValid()) {
-			echo Wrap(Anchor(
-				Wrap(T('Votes')) . Gdn_Format::BigNumber($CountVotes),
-				'/vanilla/discussion/votediscussion/'.$Discussion->DiscussionID.'/'.$Session->TransientKey().'?Target='.urlencode($Sender->SelfUrl),
-				'',
-				array('title' => T('Vote'))
-			), 'div', array('class' => 'StatBox VotesBox'));
-		} else {
-			echo Wrap(Wrap(T('Votes')) . $CountVotes, 'div', array('class' => 'StatBox VotesBox'));
+        if ($Session->IsValid()) {
+            $ID = $Discussion->DiscussionID;
+            $CssClass = '';
+            $VoteUpUrl = '/discussion/votediscussion/'.$ID.'/voteup/'.$Session->TransientKey().'/';
+            $VoteDownUrl = '/discussion/votediscussion/'.$ID.'/votedown/'.$Session->TransientKey().'/';
+            if (!$Session->IsValid()) {
+                $VoteUpUrl = Gdn::Authenticator()->SignInUrl($Sender->SelfUrl);
+                $VoteDownUrl = $VoteUpUrl;
+                $CssClass = ' SignInPopup';
+            }
+
+            echo '<span class="Voter">';
+            echo Anchor(Wrap(Wrap('Vote Up', 'i'), 'i', array('class' => 'ArrowSprite SpriteUp', 'rel' => 'nofollow')), $VoteUpUrl, 'VoteUp'.$CssClass);
+            echo Wrap(StringIsNullOrEmpty($Discussion->Score) ? '0' : Gdn_Format::BigNumber($Discussion->Score));
+            echo Anchor(Wrap(Wrap('Vote Down', 'i'), 'i', array('class' => 'ArrowSprite SpriteDown', 'rel' => 'nofollow')), $VoteDownUrl, 'VoteDown'.$CssClass);
+            echo '</span>';
 		}
 	}
 
