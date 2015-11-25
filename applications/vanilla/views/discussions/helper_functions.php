@@ -173,7 +173,7 @@ if (!function_exists('WriteDiscussion')):
                     $Sender->fireEvent('AfterCountMeta');
 
                     if ($Discussion->LastCommentID != '') {
-                        echo ' <span class="MItem LastCommentBy">'.sprintf(t('Most recent by %1$s'), userAnchor($Last)).'</span> ';
+                        echo ' <span class="MItem LastCommentBy">'.sprintf(t('Most recent comment by %1$s'), userAnchor($Last)).'</span> ';
                         echo ' <span class="MItem LastCommentDate">'.Gdn_Format::date($Discussion->LastDate, 'html').'</span>';
                     } else {
                         echo ' <span class="MItem LastCommentBy">'.sprintf(t('Started by %1$s'), userAnchor($First)).'</span> ';
@@ -187,6 +187,18 @@ if (!function_exists('WriteDiscussion')):
                     }
 
                     echo '<br><i>'.$DiscussionBodyShort.'</i> ';
+
+                    if(count($Discussion->Tags) > 0) {
+                        $String = "<br>";
+                        foreach ($Discussion->Tags as $t) {
+                            $String .= "<span style=\"border:solid 1px #CCCCCC;background-color:#FEEBB9\";><a href='";
+                            $String .= "index.php?p=";
+                            $String .= "/discussions/tagged/".rawurlencode($t["Name"])."'>&nbsp;".$t["FullName"]."&nbsp;</a></span>";
+                            $String .= "&nbsp;";
+                        }
+
+                        echo $String;
+                    }
 
                     $Sender->fireEvent('DiscussionMeta');
                     ?>
