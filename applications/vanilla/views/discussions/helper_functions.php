@@ -88,7 +88,7 @@ endif;
 
 if (!function_exists('WriteDiscussion')):
     function writeDiscussion($Discussion, &$Sender, &$Session) {
-        $SHORT_BODY_CHAR_LIMIT = 300;
+        $SHORT_BODY_CHAR_LIMIT = 250;
         $CssClass = CssClass($Discussion);
         $DiscussionUrl = $Discussion->Url;
         $Category = CategoryModel::categories($Discussion->CategoryID);
