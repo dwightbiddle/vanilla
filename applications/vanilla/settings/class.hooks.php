@@ -377,7 +377,7 @@ class VanillaHooks implements Gdn_IPlugin {
         if (is_object($Sender->User) && $Sender->User->UserID > 0) {
             $UserID = $Sender->User->UserID;
             // Add the discussion tab
-            $DiscussionsLabel = sprite('SpDiscussions').' '.t('Discussions');
+            $DiscussionsLabel = sprite('SpDiscussions').' '.t('Ideas');
             $CommentsLabel = sprite('SpComments').' '.t('Comments');
             if (c('Vanilla.Profile.ShowCounts', true)) {
                 $DiscussionsLabel .= '<span class="Aside">'.CountString(GetValueR('User.CountDiscussions', $Sender, null), "/profile/count/discussions?userid=$UserID").'</span>';
