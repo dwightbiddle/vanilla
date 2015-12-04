@@ -40,7 +40,7 @@ a:hover {
 
 .Banner {
     position: relative;
-    min-height: 98px;
+    min-height: 50px;
     text-align: left;
     padding: 20px;
 }
@@ -48,7 +48,7 @@ a:hover {
 .SiteTitle {
     font-size: 40px;
     font-weight: bold;
-    line-height: 100px;
+    line-height: 50px;
 }
 
 .SiteTitle a {
