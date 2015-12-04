@@ -390,7 +390,7 @@ class VotingPlugin extends Gdn_Plugin {
     */
    public function DiscussionsController_BeforeDiscussionFilters_Handler($Sender) {
 		echo '<li class="PopularDiscussions '.($Sender->RequestMethod == 'popular' ? ' Active' : '').'">'
-			.Anchor(Sprite('SpPopularDiscussions').' '.T('Popular'), '/discussions/popular', 'PopularDiscussions')
+			.Anchor(Sprite('SpPopularDiscussions').' '.T('Popular Ideas'), '/discussions/popular', 'PopularDiscussions')
 		.'</li>';
    }
 
@@ -407,7 +407,7 @@ class VotingPlugin extends Gdn_Plugin {
     */
 	public function Base_BeforeDiscussionTabs_Handler($Sender) {
 		echo '<li'.($Sender->RequestMethod == 'popular' ? ' class="Active"' : '').'>'
-			.Anchor(T('Popular'), '/discussions/popular', 'PopularDiscussions TabLink')
+			.Anchor(T('Ideas'), '/discussions/popular', 'PopularDiscussions TabLink')
 		.'</li>';
 	}
 
@@ -415,7 +415,7 @@ class VotingPlugin extends Gdn_Plugin {
     * Load popular discussions.
     */
    public function DiscussionsController_Popular_Create($Sender) {
-      $Sender->Title(T('Popular'));
+      $Sender->Title(T('Popular Ideas'));
 
       // Get rid of announcements from this view
       if ($Sender->Head) {
