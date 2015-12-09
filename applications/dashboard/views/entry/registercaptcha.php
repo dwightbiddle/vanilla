@@ -24,7 +24,7 @@
             <?php endif; ?>
             <li>
                 <?php
-                echo $this->Form->label('Username', 'Name');
+                echo $this->Form->label('Username - PLEASE MAKE THIS ANONYMOUS!', 'Name');
                 echo $this->Form->textBox('Name', array('autocorrect' => 'off', 'autocapitalize' => 'off', 'Wrap' => TRUE));
                 echo '<span id="NameUnavailable" class="Incorrect" style="display: none;">'.t('Name Unavailable').'</span>';
                 ?>
