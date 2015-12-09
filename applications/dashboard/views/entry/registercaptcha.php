@@ -16,7 +16,7 @@
             <?php if (!$this->data('NoEmail')): ?>
                 <li>
                     <?php
-                    echo $this->Form->label('Email', 'Email');
+                    echo $this->Form->label('Email - Use your EF email', 'Email');
                     echo $this->Form->textBox('Email', array('type' => 'email', 'Wrap' => TRUE));
                     echo '<span id="EmailUnavailable" class="Incorrect" style="display: none;">'.t('Email Unavailable').'</span>';
                     ?>
